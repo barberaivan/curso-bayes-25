@@ -1,0 +1,58 @@
+/* Achicar el texto general */
+.reveal {
+  font-size: 1.8em;
+}
+
+/* Achicar el tamaño del texto en bloques de detalles */
+.reveal details.small-details {
+  font-size: 0.75em;
+}
+
+/* Achicar el tamaño del texto dentro de los bloques de código */
+.reveal pre code {
+  font-size: 1.4em !important;
+}
+
+/* Texto general */
+.reveal {
+  color: #CCCCCC;
+}
+
+/* Títulos (h1, h2, h3, etc.) */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: #DDDDDD;
+}
+
+/* Botón de detalles*/
+details summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline;
+  color: #888888;  /* gris claro */
+  text-decoration: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Para centrar figuras*/
+.quarto-figure {
+  display: flex;
+  justify-content: center;
+}
+
+.quarto-figure img {
+  display: block;
+  margin: auto;
+}
+
+/* controlar nros de lista */
+.reveal ol {
+    margin: 0 0 0 1.5em;
+}

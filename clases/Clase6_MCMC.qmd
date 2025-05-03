@@ -1,0 +1,1262 @@
+---
+title: "Inferencia bayesiana en la práctica: MCMC"
+format:
+  revealjs:
+    theme: [simple, dark]
+    slide-number: true
+    code-fold: true
+    code-tools: true
+    code-overflow: scroll
+    toc: false
+    transition: slide
+    incremental: true
+    scrollable: true 
+    css: styles.css
+    center: false # avoid vertical centering to allow scrolling
+    fig-width: 5
+    fig-height: 4
+    fig-align: center
+    highlight-style: github
+editor:
+  markdown:
+    wrap: 72
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+cmdstanr::register_knitr_engine(override = FALSE)
+
+# Paquetes ----------------------------------------------------------------
+
+library(ggplot2)   # gráficos
+library(viridis)   # colores
+library(scales)    # leyenda de gráfico
+library(patchwork) # unir gráficos
+library(tidyr)     # pivot_longer
+library(mgcv)      # para rmvn
+library(cmdstanr)  # ajustar modelos con Stan
+library(posterior) # resumir posteriores y diagnósticos de MCMC
+library(bayesplot) # visualizar posteriores
+
+# Funciones ---------------------------------------------------------------
+
+# Para normalizar densidades o likelihoods (con fines gráficos).
+# area es el tamaño del segmento o celda en la aproximación discreta.
+# En 1D, es la distancia entre valores de la secuencia de parámetros.
+# En 2D, es el área de cada celda.
+# Devuelve un vector de densidad o likelihood, tal que
+# sum(normalized_density * area) ~= 1
+normalize_dens <- function(dens, area) {
+  dens / sum(dens * area)
+}
+
+theme_set(theme_classic())
+
+# ggplot custom theme
+nice_theme <- function() {
+  theme(
+    panel.border = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major =  element_line(),
+
+    axis.line = element_line(linewidth = 0.35),
+
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 11),
+
+    strip.text = element_text(size = 11),
+    strip.background = element_rect(fill = "white", color = "white")
+  )
+}
+
+theme_set(theme_classic())
+```
+
+Si tenemos datos y un modelo con previas, hay una distribución
+posterior.
+
+<br>
+
+¿Pero cómo accedemos a ella?
+
+------------------------------------------------------------------------
+
+El numerador es fácil de evaluar, pero no la integral del denominador.
+
+<br> 
+
+$$
+p(\alpha, \beta \mid y) = \frac{L(y \mid \alpha, \beta) \ p(\alpha) \ p(\beta)}{\int \int L(y \mid \alpha, \beta) \ p(\alpha) \ p(\beta) \ \mathrm{d}\alpha \ \mathrm{d}\beta}.
+$$ 
+
+------------------------------------------------------------------------
+
+Probablemente nos interese conocer la distribución marginal de los parámetros. Esto requiere integrar:
+
+$$
+\begin{aligned}
+p(\alpha \mid y) &= \int p(\alpha, \beta \mid y) \ \mathrm{d}\beta \\
+p(\beta \mid y) &= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha. 
+\end{aligned}
+$$ 
+
+Y seguramente nos interesará conocer las esperanzas (promedios),
+
+$$\mathbb{E}[\alpha \mid y] = \int \alpha \ p(\alpha \mid y) \ \mathrm{d}\alpha.$$
+
+------------------------------------------------------------------------
+
+Y la función de distribución acumulada
+
+$$F(\alpha \mid y) = \Pr(\alpha \le x) = \int_{-\infty}^x \ p(\alpha \mid y) \ \mathrm{d}\alpha,$$
+
+que invertida nos permite calcular los cuantiles (función cuantil):
+
+$$Q(\text{p}) = F^{-1}(\text{p}).$$
+
+Todo esto requiere integrar.
+
+------------------------------------------------------------------------
+
+Para generar una intuición de estos conceptos, tomemos la posterior del modelo de número de incendios por verano. Aproximaremos las integrales discretizando los parámetros, una estrategia llamada *integración numérica*.
+
+------------------------------------------------------------------------
+
+### Integración numérica
+
+```{r}
+#| fig-width: 7
+#| fig-height: 5
+
+datos <- read.csv(file.path("datos", "barbera_data_fire_total_climate.csv"))
+
+# definimos parámetros de la previa
+mu_a <- 0; sigma_a <- 1
+mu_b <- 0; sigma_b <- 0.1
+
+# Función que evalúa la densidad posterior no normalizada
+# ("un" de "unnormalized", porque siempre colonializado, nunca incolonializado)
+post_fire_un <- function(alpha, beta, log = T) { 
+  
+  ## Log Verosimilitud (mismo código que en like_fire)
+  
+  # Calculamos la media, lambda:
+  lambda <- exp(alpha + beta * datos$fwi)
+  # usando lambda evaluamos la verosimilitud de cada observación, 
+  # en escala log:
+  like_pointwise <- dpois(datos$fires, lambda, log = T)
+  # la log-verosimilitud conjunta es la suma de las log-verosimilitudes por 
+  # observación:
+  like <- sum(like_pointwise)
+  
+  ## Log Previa
+  lprior_a <- dnorm(alpha, mean = mu_a, sd = sigma_a, log = T)
+  lprior_b <- dnorm(beta, mean = mu_b, sd = sigma_b, log = T)
+  lprior <- lprior_a + lprior_b
+  
+  ## Log Posterior
+  lpost <- like + lprior
+  
+  if (log) return(lpost)
+  else return(exp(lpost))
+}
+
+# Creamos grilla de valores de alpha y beta.
+side <- 200 # cantidad de valores por lado
+
+alpha_seq <- seq(-0.75, 1.15, length.out = side)
+beta_seq <- seq(0.1, 0.22, length.out = side)
+
+grilla <- expand.grid(
+  alpha = alpha_seq,
+  beta = beta_seq
+)
+
+# Evaluamos la densidad posterior para cada valor
+size <- side ^ 2 # cantidad de valores en la grilla
+for (i in 1:size) {
+  grilla$post[i] <- post_fire_un(grilla$alpha[i], grilla$beta[i], log = F)  
+}
+
+# Graficamos posterior no normalizada
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  theme(legend.title = element_blank()) +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ggtitle("Posterior no normalizada") +
+  nice_theme()
+```
+
+------------------------------------------------------------------------
+
+Calculamos la integral del denominador numéricamente, y obtenemos la posterior normalizada.
+
+```{r}
+size_a <- diff(alpha_seq)[1] 
+size_b <- diff(beta_seq)[1]
+area <- size_a * size_b
+# área de cada celda en la grilla.
+
+grilla$post <- normalize_dens(grilla$post, area)
+
+# Graficamos posterior normalizada
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  theme(legend.title = element_blank()) +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ggtitle("Posterior normalizada") +
+  nice_theme()
+```
+
+------------------------------------------------------------------------
+
+Una vez que está normalizada, podemos marginalizar sumando (integrando.)
+
+```{r}
+# Para facilitar las cuentas, pondremos los valores de la posterior en una
+# matriz, análoga a la grilla (beta varía entre filas, alpha, entre columnas)
+post_mat <- matrix(grilla$post, side, side, byrow = T)
+
+alpha_tab <- data.frame(
+  alpha = alpha_seq,
+  post = NA
+)
+
+for (i in 1:side) {
+  alpha_tab$post[i] <- sum(post_mat[, i] * size_b)
+}
+  
+plot(post ~ alpha, alpha_tab, type = "l", xlab = expression(alpha),
+     ylab = "Densidad posterior")
+```
+
+------------------------------------------------------------------------
+
+Ahora, la marginal de $\beta$:
+
+```{r}
+beta_tab <- data.frame(
+  beta = beta_seq,
+  post = NA
+)
+
+for (i in 1:side) {
+  beta_tab$post[i] <- sum(post_mat[i, ] * size_a)
+}
+  
+plot(post ~ beta, beta_tab, type = "l", xlab = expression(beta),
+     ylab = "Densidad posterior")
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+
+joint <- 
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme(legend.position = "none") +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  nice_theme()
+
+ma <- ggplot(alpha_tab, aes(alpha, post, ymin = 0, ymax = post)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(color = NA, alpha = 0.1) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank())
+
+mb <- ggplot(beta_tab, aes(beta, post, ymin = 0, ymax = post)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(color = NA, alpha = 0.1) +
+  coord_flip() +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank())
+
+layout <- "
+AA##
+CCBB
+"
+
+ma + mb + joint + plot_layout(design = layout)
+```
+
+
+------------------------------------------------------------------------
+
+Desde acá podemos calcular promedios
+
+```{r}
+alpha_tab$mass <- alpha_tab$post * size_a # los pesos, suman 1
+beta_tab$mass <- beta_tab$post * size_b
+
+# Esperanza de alpha
+ea <- sum(alpha_tab$alpha * alpha_tab$mass)
+
+# Esperanza de beta
+eb <- sum(beta_tab$beta * beta_tab$mass)
+
+c(ea, eb)
+```
+
+------------------------------------------------------------------------
+
+Y cuantiles
+
+```{r}
+# obtenemos la función de distribución acumulada marginal para alpha
+alpha_tab$cdf <- cumsum(alpha_tab$mass)
+plot(cdf ~ alpha, alpha_tab, type = "l", xlab = expression(alpha),
+     ylab = "Probabilidad acumulada")
+
+# creamos la función cuantil, es decir, la inversa de la acumulada.
+# ajusta una spline. Al tomar como x la probabilidad acumulada (cdf) y como 
+# Y los valores de alpha, es la inversa de la acumulada (que es cdf = f(alpha))
+alpha_icdf <- splinefun(x = alpha_tab$cdf, y = alpha_tab$alpha, 
+                        method = "monoH.FC")  
+# esta función tiene como argumento la probabilidad acumulada (entre 0 y 1), 
+# y devuelve el valor de alpha que acumula esa probabilidad (cuantil).
+probs <- c(0, 0.025, 0.5, 0.975, 1)
+quants <- alpha_icdf(probs)
+names(quants) <- paste(probs * 100, "%")
+quants
+```
+
+------------------------------------------------------------------------
+
+Todo esto puede ser inviable si la posterior tiene $> 3$ dimensiones (parámetros). 
+
+<br>
+
+En algunos casos, la posterior tiene una solución analítica y además resulta en una distribución para la cual se conocen las marginales, con sus funciones de probabilidad acumulada y la inversa (función cuantil).
+
+<br>
+
+Pero eso es la excepción. Entonces, necesitamos formas más robustas de caracterizar las posteriores.
+
+------------------------------------------------------------------------
+
+## Enfoques para caracterizar distribuciones posteriores
+
+-   Solución analítica con integrales manejables
+
+-   Integración numérica
+
+-   Aproximaciones determinísticas (Inferencia Variacional, INLA, Aproximación de Laplace)
+
+-   Simulación
+
+------------------------------------------------------------------------
+
+### Simulación a partir de una grilla
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+# (El mismo gráfico de antes)
+p1 <- 
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  theme(legend.title = element_blank()) +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ggtitle("Posterior normalizada") +
+  ylim(min(grilla$beta) - size_b, max(grilla$beta) + size_b) +
+  xlim(min(grilla$alpha) - size_a, max(grilla$alpha) + size_a) +
+  nice_theme()
+
+# Remuestreamos celdas de la grilla con reemplazo, donde la probabilidad es 
+# proporcional a la densidad posterior
+nsim <- 10000 # número de muestras
+rows_sim <- sample(1:size, size = nsim, replace = T, prob = grilla$post)
+
+# Tomamos las filas que salieron sorteadas
+draws_table <- grilla[rows_sim, ]
+
+# Graficamos muestras
+p2 <-
+ggplot(draws_table, aes(x = alpha, y = beta)) + 
+  geom_point(alpha = 0.1) + 
+  ggtitle("Muestras de la posterior") +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ylim(min(grilla$beta) - size_b, max(grilla$beta) + size_b) +
+  xlim(min(grilla$alpha) - size_a, max(grilla$alpha) + size_a) +
+  nice_theme()
+
+
+(p1 | p2)
+```
+
+------------------------------------------------------------------------
+
+A partir de las muestras es muy sencillo obtener las marginales y medidas de resumen:
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+# Cada fila en draws_table es una muestra de la posterior conjunta (bivariada).
+# Si queremos ver la marginal de alpha o beta, simplemente miramos esa columna
+# en draws_table, ignorando los valores de la otra variable. La forma más rápida
+# de resumir una marginal es graficando su densidad empírica.
+
+par(mfrow = c(1, 2))
+plot(density(draws_table$alpha), xlab = expression(alpha), main = NA)
+plot(density(draws_table$beta), xlab = expression(beta), main = NA)
+par(mfrow = c(1, 1))
+
+# También podemos calcular medidas de resumen:
+summary(grilla[, c("alpha", "beta")])
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+# Para graficar ambas densidades en ggplot, alargamos:
+draws_long <- pivot_longer(draws_table[, c("alpha", "beta")], # sólo esas columnas
+                            cols = 1:2, names_to = "param", values_to = "value")
+
+ggplot(draws_long, aes(x = value, color = param, fill = param)) +
+  geom_density(alpha = 0.2) +
+  facet_wrap(vars(param), scales = "free")
+```
+
+------------------------------------------------------------------------
+
+También podemos calcular la probabilidad posterior de cualquier tipo de afirmación sobre los parámetros o sobre funciones de los parámetros:
+
+```{r}
+# Pr(alpha > 0)
+sum(draws_table$alpha > 0) / nsim
+
+# Pr(0 < alpha < 0.5)
+sum(draws_table$alpha > 0 & draws_table$alpha < 0.5) / nsim
+
+# Pr(exp(beta) > 1.2)
+ebeta <- exp(draws_table$beta)
+sum(ebeta > 1.2) / nsim 
+
+# Pr(lambda > 20 | FWI = 18) // lambda es la media
+FWI <- 18
+lambda <- exp(draws_table$alpha + draws_table$beta * FWI)
+sum(lambda > 20) / nsim
+
+# Pr(y > 20 | FWI = 18) // y es la respuesta
+FWI <- 18
+lambda <- exp(draws_table$alpha + draws_table$beta * FWI)
+ysim <- rpois(nsim, lambda)
+sum(ysim > 20) / nsim
+```
+
+Sin utilizar muestras, todo esto se calcularía evaluando integrales sobre las marginales o sobre transformaciones de las marginales.
+
+------------------------------------------------------------------------
+
+## Métodos de simulación
+
+-   Grilla
+
+-   Muestreo por rechazo (rejection sampling)
+
+-   Muestreo por importancia (importance sampling)
+
+-   Montecarlo basado en cadenas de Markov (MCMC)
+
+-   Montecarlo secuencial (SMC)
+
+------------------------------------------------------------------------
+
+## MCMC: Montecarlo basado en cadenas de Markov
+
+Una cadena de Markov es una secuencia de variables aleatorias $\{X_1, X_2, X_3, \dots, X_t\}$ tal que 
+
+$$\Pr(X_{t+1} | X_t, X_{t-1}, X_{t-2}, \dots) = \Pr(X_{t+1} | X_t)$$
+
+------------------------------------------------------------------------
+
+-   MCMC consiste en simular una cadena markoviana cuya distribución estacionaria es la distribución posterior.
+
+-   Recorre el espacio de parámetros de forma estocástica, tomando muestras con una frecuencia proporcional a la probabilidad posterior.
+
+-   Genera una secuencia de muestras de la posterior conjunta, generalmente correlacionadas.
+
+------------------------------------------------------------------------
+
+### Propiedades de las cadenas de Markov requeridas en MCMC
+
+<br> 
+
+1. Irreducibilidad: desde cualquier punto debo poder llegar, en algún momento, a cualquier otro punto en el espacio de parámetros.  
+
+2. Aperiodicidad: no entra en ciclos infinitos.  
+
+3. Recurrencia positiva: en algún momento, podés volver a un lugar en dondes estuviste.
+
+------------------------------------------------------------------------
+
+Bajo estas condiciones, luego de muchas iteraciones, las muestras tomadas corresponden a la distribución objetivo (la posterior), sin importar dónde comenzó la cadena.
+
+------------------------------------------------------------------------
+
+### Algoritmo de Metropolis (el MCMC más simple)
+
+-   Defiinir el número de muestras a tomar ($N$), el valor inicial de los parámetros ($\theta_1$), y una distribución de propuestas ($d$) simétrica. Evaluar $p(\theta_1 | y)$ (densidad posterior probablemente no normalizada).
+
+-   Para $i$ de $2$ a $N$, repetir:
+
+  -   Simular una muestra de la propuesta $d$ centrada en $\theta_{i-1}$. A esta muestra propuesta la llamaremos $\theta^*$. 
+  
+  -   Evaluar $p(\theta^* | y)$.
+  
+  -   Calcular $q = \frac{p(\theta^* | y)} {p(\theta_{i-1} | y)}$.
+  
+  -   Aceptar la propuesta ($\theta_i = \theta^*$) con probabilidad $\min(1, q)$. De lo contrario, definir $\theta_i = \theta_{i-1}$.
+  
+------------------------------------------------------------------------
+
+Metropolis en `R`
+
+```{r}
+# Definimos la distribución de propuesta como una normal bivariada, y 
+# aproximando la matriz de varianza-covarianza en base a la curvatura en el
+# modo. Para ello, optimizamos y obtenemos la hessiana.
+
+# optim necesita que la función a optimizar tome como argumento un vector 
+# de parámetros
+post_fire_opt <- function(x) {
+  alpha <- x[1]
+  beta <- x[2]
+  lp <- post_fire_un(alpha, beta)
+  return(lp)
+}
+
+opt <- optim(
+  par = c(0 , 0),               # vector inicial 
+  fn = post_fire_opt,           # función a optimizar
+  method = "BFGS",              # método basado en gradientes (cool)
+  control = list(fnscale = -1), # maximizar en vez de minimizar
+  hessian = TRUE                # que calcule la hessiana
+)
+
+# La matriz de varianza-covarianza, asumiento normalidad es la inversa de la 
+# -hessiana
+V <- solve(-opt$hessian)
+
+# Para muestrear con una normal multivariada de propuesta, V puede escalarse
+# por un factor, que según la teoría, lo óptimo es 2.38 ^ 2 / d, con d siendo
+# la dimensión de la posterior
+optimal_factor <- 2.38 ^ 2 / 2
+
+# Creamos una función que genera una cadena markoviana para nuestra posterior.
+# start es un vector con el valor inicial de alpha y beta. n es el número de 
+# muestras a tomar (incluye el start). factor es un factor que multiplica a 
+# la matriz de varianza-covarianza de la propuesta; un buen valor es 2, pero es
+# interesante variarlo para ver cómo afecta la eficiencia.
+mcmc_fire <- function(start, n, factor = optimal_factor) {
+  # Matriz para guardar las muestras
+  draws <- matrix(NA, nrow = n, ncol = 2) 
+  colnames(draws) <- c("alpha", "beta")
+  
+  # Vector para almacenar la log posterior, necesaria para comparar valores
+  lp <- numeric(n)
+  
+  # Iniciamos la matriz de muestras y la lp
+  draws[1, 1:2] <- start
+  lp[1] <- post_fire_un(start[1], start[2], log = T)
+  
+  # Loop recursivo para hacer avanzar las coordenadas
+  for (i in 2:n) {
+    # Proponemos un nuevo valor (vector), simulando de la distribución de 
+    # propuesta, centrada en draws[i-1, ] y con matriza de vcov V.
+    prop <- rmvn(1, mu = draws[i-1, ], V * factor)
+    
+    # Evaluamos la probabilidad posterior en la propuesta
+    lp_prop <- post_fire_un(prop[1], prop[2], log = T)
+    
+    # Calculamos el cociente de densidad posterior propuesta / valor anterior.
+    # En escala log, la resta equivale al cociente:
+    lp_diff <- lp_prop - lp[i-1]
+    p_q <- exp(lp_diff) 
+    # equivale a 
+    # p_q = exp(lp_prop) / exp(lp[i-1])
+    # pero en log es más estable
+    
+    # Aceptamos si p_q > 1 (mayor densidad en la propuesta), y sorteamos que 
+    # la propuesta se acepte, con p_q si p_q es < 1.
+    pkeep <- min(1, p_q)
+    keep_prop <- ifelse(runif(1) < pkeep, T, F)
+    
+    if (keep_prop) { # si aceptamos la propuesta, la guardamos
+      draws[i, ] <- prop
+      lp[i] <- lp_prop   # para comparar con el siguiente
+    } else {         # si no aceptamos, repetimos la muestra anterior
+      draws[i, ] <- draws[i-1, ]
+      lp[i] <- lp[i-1]   # para comparar con el siguiente
+    }
+  }
+  
+  return(draws)
+}
+```
+
+------------------------------------------------------------------------
+
+Simulamos una cadena corta
+
+```{r}
+# Para graficar sobre la grilla, la extendemos un poco. Esto permite ver cómo la 
+# cadena se mueve por zonas de baja densidad también, probablemente porque la 
+# iniciamos en una zona de baja densidad.
+alpha_seq <- seq(-1, 1.5, length.out = side)  # límites más amplios que antes
+beta_seq <- seq(0, 0.3, length.out = side)
+
+size_a <- diff(alpha_seq)[1]
+size_b <- diff(beta_seq)[1]
+
+grilla <- expand.grid(
+  alpha = alpha_seq,
+  beta = beta_seq
+)
+
+for (i in 1:size) {
+  grilla$post[i] <- post_fire_un(grilla$alpha[i], grilla$beta[i], log = F)
+}
+```
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+# Corremos una cadena corta comenzando dentro de la grilla
+run1 <- mcmc_fire(start = c(-0.25, 0.15), n = 50)
+draws_table <- as.data.frame(run1)
+
+# Graficamos
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  geom_point(data = draws_table, mapping = aes(x = alpha, y = beta),
+             inherit.aes = F, size = 2, alpha = 0.3) +
+  geom_line(data = draws_table, mapping = aes(x = alpha, y = beta),
+             inherit.aes = F, alpha = 0.5, linewidth = 0.2) +
+  theme(legend.position = "none") +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ylim(min(grilla$beta) - size_b, max(grilla$beta) + size_b) +
+  xlim(min(grilla$alpha) - size_a, max(grilla$alpha) + size_a) +
+  nice_theme()
+```
+
+------------------------------------------------------------------------
+
+Ahora un poco más
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+nsim <- 1000
+set.seed(12359) # para reproducibilidad
+run1 <- mcmc_fire(start = c(-0.5, 0.1), n = nsim)
+draws_table <- as.data.frame(run1)
+
+p1 <- 
+ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
+  geom_tile() + 
+  scale_fill_viridis() +
+  theme(legend.position = "none") +
+  ggtitle("Densidad posterior") +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ylim(min(grilla$beta) - size_b, max(grilla$beta) + size_b) +
+  xlim(min(grilla$alpha) - size_a, max(grilla$alpha) + size_a) +
+  nice_theme()
+
+p2 <- 
+ggplot(draws_table, aes(x = alpha, y = beta)) + 
+  geom_point(alpha = 0.1) + 
+  ggtitle("Muestras") +
+  xlab(expression(alpha)) + 
+  ylab(expression(beta)) +
+  ylim(min(grilla$beta) - size_b, max(grilla$beta) + size_b) +
+  xlim(min(grilla$alpha) - size_a, max(grilla$alpha) + size_a) +
+  nice_theme()
+
+(p1 | p2)
+```
+
+------------------------------------------------------------------------ 
+
+Visualizamos la serie temporal
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+draws_table$time <- 1:nsim
+
+p3 <- 
+  ggplot(draws_table, aes(time, alpha)) + 
+  geom_line(linewidth = 0.3) +
+  nice_theme() + 
+  ylab(expression(alpha)) +
+  xlab("Iteración")
+
+p4 <- 
+  ggplot(draws_table, aes(time, beta)) + 
+  geom_line(linewidth = 0.3) +
+  nice_theme() + 
+  ylab(expression(beta)) +
+  xlab("Iteración")
+
+(p3 | p4)
+```
+
+------------------------------------------------------------------------ 
+
+Achicamos la amplitud de la propuesta para que se mueva lento, y le hacemos comenzar en una zona con baja probabilidad
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3
+
+nn <- 3000
+run2 <- mcmc_fire(start = c(-2, 1), n = nn, factor = 0.1)
+draws_table <- as.data.frame(run2)
+draws_table$time <- 1:nn
+
+p3 <- 
+  ggplot(draws_table, aes(time, alpha)) + 
+  geom_line(linewidth = 0.3) +
+  nice_theme() + 
+  ylab(expression(alpha)) +
+  xlab("Iteración")
+
+p4 <- 
+  ggplot(draws_table, aes(time, beta)) + 
+  geom_line(linewidth = 0.3) +
+  nice_theme() + 
+  ylab(expression(beta)) +
+  xlab("Iteración")
+
+(p3 | p4)
+```
+
+------------------------------------------------------------------------
+
+### Dianósticos de MCMC
+
+[Uso interactivo, vaya a `R`]
+
+```{r}
+# Corremos 3 cadenas de igual largo comenzando en puntos al azar
+iter_warmup <- 2000
+iter_sampling <- 5000
+n <- iter_warmup + iter_sampling
+f <- optimal_factor * 0.05
+
+c1 <- mcmc_fire(start = runif(2, -1, 1), n = n, factor = f)
+c2 <- mcmc_fire(start = runif(2, -1, 1), n = n, factor = f)
+c3 <- mcmc_fire(start = runif(2, -1, 1), n = n, factor = f)
+
+# Las Combinamos en un array 3D, ya que son 3 matrices
+arr <- abind::abind(list(c1, c2, c3), along = 3)
+dimnames(arr) <- list(
+  iteration = 1:n,
+  variable = c("alpha", "beta"),
+  chain = 1:3
+)
+
+# El paquete posterior requiere que las dimensiones sean iteration, chain, 
+# variable, así que reordenamos:
+arr <- aperm(arr, c(1, 3, 2))
+
+# Converimos draws_array object, clase del paquete posterior
+draws <- as_draws_array(arr)
+summarize_draws(draws)
+mcmc_trace(draws) # de bayesplot
+
+# Quitamos el warmup, porque aún no había llegado al set típico (nos quedamos
+# con las últimas iter_sampling de cada cadena)
+iters_use <- (iter_warmup + 1) : n
+draws_crop <- draws[iters_use, , ]
+summarize_draws(draws_crop)
+mcmc_trace(draws_crop)
+```
+
+------------------------------------------------------------------------
+
+### $\hat{R}$ y Número Efectivo de Muestras (ESS)
+
+<br>
+
+- El $\hat{R}$ (factor de reducción potencial de escala) verifica que las cadenas se hayan mezclado bien:
+  - $\hat{R} \to 1$ si hay convergencia.
+  - Umbral recomendado: $\hat{R} < 1.01$.
+
+<br>
+
+- El número efectivo de muestras (ESS) indica a cuántas muestras independientes equivale tu muestra:
+  - Considera la autocorrelación temporal en las cadenas.
+  - Se recomienda ESS > 400 para estimaciones confiables (pero depende del contexto).
+
+------------------------------------------------------------------------
+
+#### Definiciones:
+
+<br> 
+
+Varianza entre cadenas (B de between):
+$$
+B = \frac{N}{M-1} \sum_{m=1}^M \left( \bar{\theta}_m - \bar{\theta} \right)^2,
+$$
+con $N =$ número de muestras por cadena,  
+$M =$ número de cadenas,  
+$\bar{\theta}_m =$ media por cadena, y  
+$\bar{\theta} =$ media total. 
+
+<br> 
+
+Varianza intra-cadenas (W de within):
+$$
+W = \frac{1}{M} \sum_{m=1}^M s_m^2,
+$$
+siendo $s^2_m$ la varianza de la cadena $m$.
+
+<br>
+
+Varianza posterior marginal estimada:
+$$
+\widehat{\text{var}}^+(\theta) = \frac{N-1}{N} W + \frac{1}{N} B
+$$
+
+<br>
+
+Factor de reducción potencial de escala:
+$$
+\hat{R} = \sqrt{ \frac{ \widehat{\text{var}}^+(\theta) }{ W } }
+$$
+
+<br>
+
+Número Efectivo de Muestras:
+$$
+\text{ESS} = \frac{MN}{\widehat{\tau}}
+$$
+
+donde $\widehat{\tau}$ es una estimación de la autocorrelación temporal integrada en muchos lags.
+
+------------------------------------------------------------------------  
+
+Detalles en 
+
+<br>
+
+Aki Vehtari, Andrew Gelman, Daniel Simpson, Bob Carpenter, and Paul-Christian Bürkner. 2021. Rank-Normalization, Folding, and Localization: An Improved $\hat{R}$ for Assessing Convergence of MCMC. Bayesian Analysis 16, Number 2, pp. 667–718.
+
+------------------------------------------------------------------------  
+  
+[Galería de MCMC](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=RandomWalkMH&target=banana)
+
+------------------------------------------------------------------------
+
+## MCMC eficiente: Montecarlo Hamiltoniano (HMC)
+
+<br>
+
+-   Propuestas inteligentes: utilizando la curvatura de la densidad posterior (gradiente) logra dar pasos grandes manteniéndose en la región de alta probabilidad (*set típico*).
+
+-   Para generar estas propuetas utiliza una analogía física: simulando el moviemiento de un cuerpo que se mueve en la superficie (N-dimensional) de la -log posterior siguiendo una dinámica Hamiltoniana.
+
+-   Escala muy bien con la dimensionalidad (nro. de parámetros).
+
+-   Como requiere calcular el gradiente, no se puede usar para estimar directamente parámetros discretos (hay que marginalizarlos).
+
+------------------------------------------------------------------------
+
+## Stan: HMC-NUTS y un poco más
+
+:::: {style="display: flex; justify-content: center; align-items: center; height: 40vh; font-size: 2em;"}
+<div>
+
+C++ ⇄  [Stan](https://mc-stan.org/)  ⇄ {R, Python, Julia, Unix}
+
+</div>
+::::
+
+------------------------------------------------------------------------
+
+[Algoritmos en Stan](https://mc-stan.org/docs/reference-manual/mcmc.html)
+
+<br>
+
+[Guía de usuarios](https://mc-stan.org/docs/stan-users-guide/)
+
+------------------------------------------------------------------------
+
+### Programando un modelo en Stan
+
+<br>
+
+-   Un programa de Stan define una log densidad que deseamos caracterizar. 
+
+-   En la mayor parte de los casos se tratará de una densidad posterior.
+
+-   En este curso usaremos Stan para muestrear (HMC-NUTS), pero también ofrece otros métodos menos precisos pero más rápidos que valen la pena cuando tenemos sets de datos muy grandes o funciones de verosimilitud muy costosas.
+
+------------------------------------------------------------------------
+
+### El código 
+
+<br> 
+
+Stan divide el código en 6 secciones, pero rara vez usaremos todas
+
+```{stan, output.var="tst_chunk", eval=FALSE, fold="false"}
+functions {}           
+data {}
+transformed data {}
+parameters {}              
+transformed parameters {}
+model {}                   
+generated quantities {}
+```
+
+
+------------------------------------------------------------------------
+
+Ejemplo 
+
+```{stan, output.var="tst_chunk", eval=FALSE, fold="false"}
+// (Esto se guarda en un archivo .stan)
+data {
+  int N;
+  array[N] int y; // Número de incendios
+  vector[N] x; // FWI
+}
+
+// Parámetros a muestrear
+parameters {
+  real alpha;
+  real beta;
+}
+
+// Calculamos las cantidades derivadas
+transformed parameters {
+  vector[N] lambda = exp(alpha + beta * x);
+}
+
+// Acá definimos la log densidad posterior (o la que sea)
+model {
+  // Densidad previa
+  alpha ~ normal(0, 1);
+  beta ~ normal(0, 0.1);
+  
+  // Verosimilitud
+  y ~ poisson(lambda);
+}
+```
+
+------------------------------------------------------------------------
+
+Formas de definir la log densidad posterior
+
+<br>
+
+De forma expresiva, con *sampling statements*:
+
+```{stan, output.var="tst_chunk", eval=FALSE, fold="false"}
+model {
+  // Densidad previa
+  alpha ~ normal(0, 1);
+  beta ~ normal(0, 0.1);
+  
+  // Verosimilitud
+  y ~ poisson(lambda);
+  
+  /* 
+    Esto equivale a decir "sumá a la log densidad posterior la 
+    log densidad de alpha en una normal con media 0 y desvío 1, la
+    log densidad de beta en una normal con media 0 y desvío 0.1, y la
+    log verosimilitud (conjunta) de observar 'y' (es un vector) como realización
+    de una Poisson cuyas medias son lambda (vector también).
+  */ 
+}
+```
+
+De forma explícita, sumando términos a `target`:
+
+```{stan, output.var="tst_chunk", eval=FALSE, fold="false"}
+model{
+  /*
+    Stan guarda la log densidad objetivo en un objeto llamado 'target'.
+    Cada vez que se evalúa la log posterior, target comienza valiendo 0. 
+    Esta parte de la función se encarga de sumarle los términos correspondientes.
+  */
+
+  // Sumar log densidad previa
+  target += normal_lpdf(alpha | 0, 1);
+  target += normal_lpdf(beta | 0, 0.1);
+  
+  // Sumar log verosimilitud
+  target += poisson_lpmf(y | lambda);
+  
+  // lpdf: Log Probability Density Function
+  // lpmf: Log Probability Mass Function
+}
+```
+
+Y se pueden mezclar
+
+```{stan, output.var="tst_chunk", eval=FALSE, fold="false"}
+model{
+  /*
+    Podemos mezclar ambas formas, pero siempre hay que usar una sola por 
+    parámetro. (Si no, estará duplicada, lo cual es computacionalmente válido 
+    pero sería sospechoso que tenga sentido.)
+  */
+  
+  // Vale hacer
+  alpha ~ normal(0, 1);
+  target += normal_lpdf(beta | 0, 0.1);
+  y ~ poisson(lambda);
+  
+  /*
+    Las funciones de densidad o verosimilitudes suelen tener constantes
+    normalizadoras. Usando target +=, Stan las conserva, pero usando los 
+    sampling statements (~), los quita de la función, ahorrando un poco de 
+    cómputo. En algunos casos necesitamos conservar esas constantes para 
+    hacer una cuenta, y ahí conviene usar target +=.
+  */
+}
+```
+
+------------------------------------------------------------------------
+
+Analogía con R
+
+```{r}
+#| code-fold: false
+
+# Una función que evalúa la log posterior de nuestro modelo con un estilo 
+# similar a Stan
+post_fire_like_stan <- function(alpha, beta) { 
+  # Datos 
+  y <- datos$fires
+  x <- datos$fwi
+  
+  # Parámetros
+  # alpha y beta, pero en R no hay que declarar variables :) ... o :(, no sé
+  
+  # Parámetros transformados
+  lambda <- exp(alpha + beta * x)
+  
+  # Modelo (definimos log densidad posterior)
+  
+  target <- 0 # iniciamos la log posterior en cero
+  
+  # Log densidad de las previas
+  target <- target + dnorm(alpha, mean = 0, sd = 1, log = T) 
+  target <- target + dnorm(beta, mean = 0, sd = 0.1, log = T)
+  # Es una analogía con el operador += de Stan
+  
+  # Log verosimilitud
+  log_like_pointwise <- dpois(y, lambda, log = T) # dato por dato
+  log_like_joint <- sum(log_like_pointwise)       # conjunta
+  target <- target + log_like_joint
+  
+  return(target)
+}
+```
+
+------------------------------------------------------------------------
+
+### Interfaz entre `R` y `Stan`: `cmdstanr`
+
+```{r}
+# El código de Stan, como escribimos arriba, debe estar guardado en un archivo
+# .stan.
+model_path <- "modelo_nfuegos.stan"
+
+# Compilamos el modelo
+model <- cmdstan_model(model_path)
+
+# Podemos revisar si lo escribimos bien
+model$check_syntax()
+
+# Creamos una lista nombrada para pasarle los datos. Los nombres de cada
+# elemento de la lista tienen que ser exactamente los que definimos en 
+# la sección data {}
+stan_data <- list(
+  N = nrow(datos),
+  y = datos$fires,
+  x = datos$fwi
+)
+
+# Y muestreamos la posterior
+fit_mcmc <- model$sample(
+  data = stan_data,
+  chains = 4, 
+  parallel_chains = 4,
+  iter_warmup = 1000,
+  iter_sampling = 1000
+)
+
+# Corremos los diagnósticos del muestreo. Si hay problemas, por defecto 
+# aparecen warnings cuando sample() termina de correr, pero así podemos verlos 
+# de nuevo.
+fit_mcmc$cmdstan_diagnose()
+
+# Resumimos las marginales usando el paquete 'posterior' summaries
+summ <- fit_mcmc$summary()
+print(summ)
+
+# Cuál es el peor neff y el peor rhat?
+min(c(min(summ$ess_bulk), min(summ$ess_tail)))
+max(summ$rhat)
+```
+
+[Diagnósticos del MCMC](https://mc-stan.org/learn-stan/diagnostics-warnings.html)
+
+------------------------------------------------------------------------
+
+Algunas herramientas de visualización usando [`bayesplot`](https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html)
+
+```{r}
+# Seteamos un lindo color para bayesplot
+color_scheme_set("viridisC")
+
+# Extraemos las muestras y las formateamos como draws_array, una clase del
+# paquete 'posterior'
+draws <- fit_mcmc$draws(format = "draws_array")
+
+# Gráfico de traza, para visualizar convergencia
+mcmc_trace(draws, pars = c("alpha", "beta"))
+
+# Gráfico de densidad por cadena
+mcmc_dens_overlay(draws, pars = c("alpha", "beta"))
+
+# Sólo para ilustrar, reajustamos el modelo pero guardando las iteraciones
+# del warmup.
+fit_mcmc_all <- model$sample(
+  data = stan_data,
+  chains = 4, 
+  parallel_chains = 4,
+  iter_warmup = 1000,
+  iter_sampling = 1000,
+  save_warmup = TRUE   # por defecto es FALSE
+)
+draws_all <- fit_mcmc_all$draws(format = "draws_array", inc_warmup = TRUE)
+mcmc_trace(draws_all, pars = c("alpha", "beta"), n_warmup = 1000)
+
+```
+
+------------------------------------------------------------------------
+
+Gráficos de pares
+
+```{r}
+# Gráfico de dispersión, para ver un parámetro contra otro
+mcmc_scatter(draws, pars = c("alpha", "beta"))
+
+# Gráfico de pares, para ver de a muchos pares
+mcmc_pairs(draws, pars = c("alpha", "beta"),
+           off_diag_args = list(size = 0.75, alpha = 0.5))
+
+# Avanzado: evaluar dóndo hubo transiciones divergentes
+# Extraemos los parámetros del No-U-Turn Sampler (NUTS)
+np <- nuts_params(fit_mcmc)
+mcmc_pairs(draws, np = np, pars = c("alpha", "beta"),
+           off_diag_args = list(size = 0.75, alpha = 0.5))
+# (como no hubo transiciones divergentes, no muestra puntos rojos)
+```
+
+------------------------------------------------------------------------
+
+Predicciones y enunciados probabilísticos
+
+```{r}
+# Como vimos antes, podemos calcular probabilides como frecuencias.
+
+# Extraemos las muestras como data.frame
+d <- fit_mcmc$draws(variables = c("alpha", "beta"), 
+                    format = "draws_df")
+nsim <- nrow(d)
+
+# Pr(exp(beta) > 1.2)
+ebeta <- exp(d$beta)
+sum(ebeta > 1.2) / nsim 
+
+# Pr(lambda > 20 | FWI = 18) // lambda es la media!
+FWI <- 18
+lambda <- exp(d$alpha + d$beta * FWI)
+sum(lambda > 20) / nsim
+
+# Distribución posterior de lambda (la media) cuando el FWI es 18:
+plot(density(lambda), xlab = expression(lambda), main = NA)
+
+# Pr(y > 20 | FWI = 18) //
+ysim <- rpois(nsim, lambda) # simulamos datos :)
+sum(ysim > 20) / nsim
+
+# Distribución predictiva posterior de y para FWI = 18:
+plot(density(ysim, from = 0), xlab = "y", main = NA)
+
+# Visualizamos ambos a la vez:
+plot(density(lambda), xlab = expression(lambda, y), main = NA, xlim = c(0, 50))
+lines(density(ysim, from = 0), xlab = "y", main = NA, col = 4)
+
+# Y cuentas más arbitrarias aún. Ejemplo: ¿cuán probable es que el número de 
+# incendios medio con un FWI = 20 sea el doble o mayor que cuando el FWI es 15?
+# Esto requiere calcular la distribución posterior de lambda para FWI = 15 y 
+# FWI = 20, luego calcular el cociente y evaluar qué proporción de muestras 
+# tienen un cociente >= 2.
+lambda_15 <- exp(d$alpha + d$beta * 15)
+lambda_20 <- exp(d$alpha + d$beta * 20)
+qlambdas <- lambda_20 / lambda_15
+plot(density(qlambdas), main = NA, xlab = "Cociente de lambdas")
+abline(v = 2, lty = 2)
+
+# Pr(qlambdas >= 2)
+sum(qlambdas >= 2) / nsim
+
+# También podemos reponder lo mismo sobre el número observado de incendios crudo,
+# no su media:
+y_15 <- rpois(nsim, lambda_15)
+y_20 <- rpois(nsim, lambda_20)
+qy <- y_20 / y_15
+plot(density(qy), main = NA, xlab = "Cociente de y")
+abline(v = 2, lty = 2)
+
+# Pr(qy >= 2)
+sum(qy >= 2) / nsim
+```
+
+------------------------------------------------------------------------
+
+## Trabajo Práctico 6

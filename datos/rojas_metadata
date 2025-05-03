@@ -1,0 +1,8 @@
+plant.sp: especie de planta consumida.
+bird.sp: especie de ave consumidora.
+source: estudio.
+foraging.behaviour: gulper (tragador) vs. masher (masticador).
+fruitstime: tasa de consumo (frutos / min).
+gape.width: ancho de la base del pico, media por sp (cm).
+frdiam: diámetro del fruto, media por sp (cm).
+
