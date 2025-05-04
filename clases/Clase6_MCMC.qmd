@@ -17,6 +17,14 @@ format:
     fig-height: 4
     fig-align: center
     highlight-style: github
+  pdf:
+    documentclass: article
+    keep-tex: true
+    toc: true
+    number-sections: true
+    fig-width: 5
+    fig-height: 4
+    fig-align: center
 editor:
   markdown:
     wrap: 72
@@ -130,7 +138,7 @@ Para generar una intuición de estos conceptos, tomemos la posterior del modelo 
 #| fig-width: 7
 #| fig-height: 5
 
-datos <- read.csv(file.path("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
 
 # definimos parámetros de la previa
 mu_a <- 0; sigma_a <- 1
@@ -1101,10 +1109,9 @@ post_fire_like_stan <- function(alpha, beta) {
 ```{r}
 # El código de Stan, como escribimos arriba, debe estar guardado en un archivo
 # .stan.
-model_path <- "modelo_nfuegos.stan"
 
 # Compilamos el modelo
-model <- cmdstan_model(model_path)
+model <- cmdstan_model(here::here("modelos", "nfuegos.stan"))
 
 # Podemos revisar si lo escribimos bien
 model$check_syntax()

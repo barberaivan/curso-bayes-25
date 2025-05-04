@@ -44,24 +44,27 @@ theme_set(theme_classic())
 
 datos <- read.csv(file.path("datos", "barbera_data_fire_total_climate.csv"))
 
-# 01 ----------------------------------------------------------------------
-# Elegí un set de datos y definí un modelo sencillo (1 o 2 parámetros).
+
+# Actividad 1 -------------------------------------------------------------
+
+# 1.1 ---------------------------------------------------------------------
+# Elegir un set de datos y definir un modelo sencillo (1 o 2 parámetros).
 # Puede ser estadístico o no (la función de costo no necesariamente tiene que
 # ser una -log verosimilitud).
 
 # y_i ~ Poisson(lambda_i)
 # lambda_i = exp(alpha + beta * x)
 
-# 02 ----------------------------------------------------------------------
-# Evaluá qué restricciones debería imponerse sobre los parámetros para que el
+# 1.2 ---------------------------------------------------------------------
+# Evaluar qué restricciones debería imponerse sobre los parámetros para que el
 # modelo sea sensato.
 
 # beta > 0, y no muy grande
 
-# 03 ----------------------------------------------------------------------
-# Graficá la función de verosimilitud del modelo (o la función de costo) y
+# 1.3 ---------------------------------------------------------------------
+# Graficar la función de verosimilitud del modelo (o la función de costo) y
 # encontrá el máximo utilizando el método de la grilla. Si el modelo tiene
-# D > 2 parámetros, se deberán fijar D - 2 para poder graficar. Graficá la
+# D > 2 parámetros, se deberán fijar D - 2 para poder graficar. Graficar la
 # predicción en función de alguna variable predictora (si es que la hay)
 # utilizando el valor de la grilla con mayor verosimilitud o menor costo.
 
@@ -125,8 +128,8 @@ p2 <- ggplot(datos, aes(x = fwi, y = fires)) +
 # Unimos
 (p1 | p2)
 
-# 04 ----------------------------------------------------------------------
-# Compará la estimación basada en la grilla con la obtenida usando optim.
+# 1.4 ---------------------------------------------------------------------
+# Comparár la estimación basada en la grilla con la obtenida usando optim.
 
 like_fire_opt <- function(x) {
   alpha <- x[1]
@@ -143,13 +146,13 @@ opt <- optim(
 opt$par
 grilla[row, c("alpha", "beta")]
 
-# 05 ----------------------------------------------------------------------
+# 1.5 ---------------------------------------------------------------------
 # ¿Existen otros valores de los parámetros que también presentan un
 # ajuste razonable a los datos, aunque sea subóptimo? ¿Cómo se podría
 # escoger un set de valores razonables?
 
-# 06 ----------------------------------------------------------------------
-# Repetí los puntos 3 y 5 pero utilizando el 20 % y el 50 % de los
+# 1.6 ---------------------------------------------------------------------
+# Repetir los puntos 1.3 y 1.5 pero utilizando el 20 % y el 50 % de los
 # datos disponibles, y compará los resultados.
 
 # Ejemplo con N = 20 %
@@ -189,18 +192,19 @@ p2 <- ggplot(datos[filas20, ], aes(x = fwi, y = fires)) +
 (p1 | p2)
 
 
+# Actividad 2 -------------------------------------------------------------
 
-# 07 ----------------------------------------------------------------------
+# 2.1 ---------------------------------------------------------------------
 # Utilizando el mismo set de datos y modelo escogido previamente (ejercicio 1),
-# definí previas para los parámetros, convirtiéndolo en un modelo bayesiano.
+# definir previas para los parámetros, convirtiéndolo en un modelo bayesiano.
 
 # y_i ~ Poisson(lambda_i)
 # lambda_i = exp(alpha + beta * x)
 # alpha ~ Normal(0, 1)
 # beta ~ Normal(0, 0.5)
 
-# 08 ----------------------------------------------------------------------
-# Graficá la función de verosimilitud, la densidad previa y la densidad
+# 2.2 ---------------------------------------------------------------------
+# Graficar la función de verosimilitud, la densidad previa y la densidad
 # posterior.
 
 # Creamos grilla de valores de alpha y beta.
@@ -279,9 +283,9 @@ p3 <-
 # Unimos usando patchwork
 (p1 | p2 | p3) + plot_layout(nrow = 2)
 
-# 09 ----------------------------------------------------------------------
-# Explorá distintas previas, ya sea variando los parámetros de una
-# misma distribución o utilizando otra distribución. Intentá crear
+# 2.3 ---------------------------------------------------------------------
+# Explorar distintas previas, ya sea variando los parámetros de una
+# misma distribución o utilizando otra distribución. Intentar crear
 # previas que influyan en el resultado y otras que no.
 
 grilla2 <- grilla
@@ -358,8 +362,8 @@ for (i in 1:size) {
 
 # (El resto del código, igual)
 
-# 10 ----------------------------------------------------------------------
-# Repetí la comparación entre posteriores pero utilizando únicamente 2 o 3
+# 2.4 ---------------------------------------------------------------------
+# Repetír la comparación entre posteriores pero utilizando únicamente 2 o 3
 # observaciones. Las previas que no influían en el resultado usando todos los
 # datos, ¿siguen sin influir?
 
@@ -444,7 +448,7 @@ p3 <-
 # Unimos usando patchwork
 (p1 | p2 | p3) + plot_layout(nrow = 2)
 
-# 11 ----------------------------------------------------------------------
-# ¿Cómo podrías caracterizar la distribución posterior de una forma más
-# compacta que un gráfico? ¿Cómo lo harías si quisieras describir resultados
+# 2.5 ---------------------------------------------------------------------
+# ¿Cómo se podría caracterizar la distribución posterior de una forma más
+# compacta que un gráfico? ¿Cómo se podrían describir resultados
 # sobre un parámetro en particular si el modelo tiene más de un parámetro?

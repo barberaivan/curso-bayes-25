@@ -207,7 +207,8 @@
 </section>
 <section class="slide level2">
 
-<p>El numerador es fácil de evaluar, pero no su integral.</p>
+<p>El numerador es fácil de evaluar, pero no la integral del denominador.</p>
+<p><br></p>
 <p><span class="math display">\[
 p(\alpha, \beta \mid y) = \frac{L(y \mid \alpha, \beta) \ p(\alpha) \ p(\beta)}{\int \int L(y \mid \alpha, \beta) \ p(\alpha) \ p(\beta) \ \mathrm{d}\alpha \ \mathrm{d}\beta}.
 \]</span></p>
@@ -228,9 +229,13 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 
 <p>Y la función de distribución acumulada</p>
 <p><span class="math display">\[F(\alpha \mid y) = \Pr(\alpha \le x) = \int_{-\infty}^x \ p(\alpha \mid y) \ \mathrm{d}\alpha,\]</span></p>
-<p>que invertida nos permite calcular los cuantiles/percentiles (función cuantil):</p>
+<p>que invertida nos permite calcular los cuantiles (función cuantil):</p>
 <p><span class="math display">\[Q(\text{p}) = F^{-1}(\text{p}).\]</span></p>
 <p>Todo esto requiere integrar.</p>
+</section>
+<section class="slide level2">
+
+<p>Para generar una intuición de estos conceptos, tomemos la posterior del modelo de número de incendios por verano. Aproximaremos las integrales discretizando los parámetros, una estrategia llamada <em>integración numérica</em>.</p>
 </section>
 <section class="slide level2">
 
@@ -238,7 +243,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"datos"</span>, <span class="st">"barbera_data_fire_total_climate.csv"</span>))</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"datos"</span>, <span class="st">"barbera_data_fire_total_climate.csv"</span>))</span>
 <span id="cb1-2"><a href=""></a></span>
 <span id="cb1-3"><a href=""></a><span class="co"># definimos parámetros de la previa</span></span>
 <span id="cb1-4"><a href=""></a>mu_a <span class="ot">&lt;-</span> <span class="dv">0</span>; sigma_a <span class="ot">&lt;-</span> <span class="dv">1</span></span>
@@ -303,7 +308,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <img data-src="Clase6_MCMC_files/figure-revealjs/unnamed-chunk-1-1.png" width="672" class="r-stretch"></section>
 <section class="slide level2">
 
-<p>La normalizamos</p>
+<p>Calculamos la integral del denominador numéricamente, y obtenemos la posterior normalizada.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -595,7 +600,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb16-2"><a href=""></a><span class="fu">sum</span>(draws_table<span class="sc">$</span>alpha <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.7122</code></pre>
+<pre><code>[1] 0.7177</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -603,7 +608,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb18-2"><a href=""></a><span class="fu">sum</span>(draws_table<span class="sc">$</span>alpha <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> draws_table<span class="sc">$</span>alpha <span class="sc">&lt;</span> <span class="fl">0.5</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.6021</code></pre>
+<pre><code>[1] 0.6146</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -612,7 +617,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb20-3"><a href=""></a><span class="fu">sum</span>(ebeta <span class="sc">&gt;</span> <span class="fl">1.2</span>) <span class="sc">/</span> nsim </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1158</code></pre>
+<pre><code>[1] 0.117</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -622,7 +627,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb22-4"><a href=""></a><span class="fu">sum</span>(lambda <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.6391</code></pre>
+<pre><code>[1] 0.6517</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -633,7 +638,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb24-5"><a href=""></a><span class="fu">sum</span>(ysim <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.4942</code></pre>
+<pre><code>[1] 0.5073</code></pre>
 </div>
 </div>
 <p>Sin utilizar muestras, todo esto se calcularía evaluando integrales sobre las marginales o sobre transformaciones de las marginales.</p>
@@ -644,12 +649,12 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <li class="fragment"><p>Grilla</p></li>
 <li class="fragment"><p>Muestreo por rechazo (rejection sampling)</p></li>
 <li class="fragment"><p>Muestreo por importancia (importance sampling)</p></li>
-<li class="fragment"><p>Montecarlo basado en Cadenas de Markov (MCMC)</p></li>
-<li class="fragment"><p>Montecarlo Secuencial (SMC)</p></li>
+<li class="fragment"><p>Montecarlo basado en cadenas de Markov (MCMC)</p></li>
+<li class="fragment"><p>Montecarlo secuencial (SMC)</p></li>
 </ul>
 </section>
 <section id="mcmc-montecarlo-basado-en-cadenas-de-markov" class="slide level2">
-<h2>MCMC: Montecarlo basado en Cadenas de Markov</h2>
+<h2>MCMC: Montecarlo basado en cadenas de Markov</h2>
 <p>Una cadena de Markov es una secuencia de variables aleatorias <span class="math inline">\(\{X_1, X_2, X_3, \dots, X_t\}\)</span> tal que</p>
 <p><span class="math display">\[\Pr(X_{t+1} | X_t, X_{t-1}, X_{t-2}, \dots) = \Pr(X_{t+1} | X_t)\]</span></p>
 </section>
@@ -664,15 +669,16 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <section class="slide level2 scrollable">
 
 <h3 id="propiedades-de-las-cadenas-de-markov-requeridas-en-mcmc">Propiedades de las cadenas de Markov requeridas en MCMC</h3>
+<p><br></p>
 <ol type="1">
-<li class="fragment"><p>Irreducibilidad: Desde cualquier punto debo poder llegar, eventualmente, a cualquier otro punto en el espacio de parámetros.</p></li>
-<li class="fragment"><p>Aperiodicidad: No entra en ciclos infinitos.</p></li>
-<li class="fragment"><p>Recurrencia positiva: Eventualmente, podés volver a un lugar en dondes estuviste.</p></li>
+<li class="fragment"><p>Irreducibilidad: desde cualquier punto debo poder llegar, en algún momento, a cualquier otro punto en el espacio de parámetros.</p></li>
+<li class="fragment"><p>Aperiodicidad: no entra en ciclos infinitos.</p></li>
+<li class="fragment"><p>Recurrencia positiva: en algún momento, podés volver a un lugar en dondes estuviste.</p></li>
 </ol>
 </section>
 <section class="slide level2">
 
-<p>Bajo estas condiciones, luego de muchas iteraciones, las muestras tomadas corresponden a la distribución objetivo (la posterior), sin importar dónde comenzamos.</p>
+<p>Bajo estas condiciones, luego de muchas iteraciones, las muestras tomadas corresponden a la distribución objetivo (la posterior), sin importar dónde comenzó la cadena.</p>
 </section>
 <section class="slide level2">
 
@@ -922,7 +928,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <img data-src="Clase6_MCMC_files/figure-revealjs/unnamed-chunk-17-1.png" width="672" class="r-stretch"></section>
 <section class="slide level2">
 
-<h3 id="dianósticos-de-mcmc-realmente-estamos-muestreando-de-la-posterior">Dianósticos de MCMC: ¿realmente estamos muestreando de la posterior?</h3>
+<h3 id="dianósticos-de-mcmc">Dianósticos de MCMC</h3>
 <p>[Uso interactivo, vaya a <code>R</code>]</p>
 <div class="cell">
 <details class="code-fold">
@@ -1264,31 +1270,30 @@ W = \frac{1}{M} \sum_{m=1}^M s_m^2,
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href=""></a><span class="co"># El código de Stan, como escribimos arriba, debe estar guardado en un archivo</span></span>
 <span id="cb44-2"><a href=""></a><span class="co"># .stan.</span></span>
-<span id="cb44-3"><a href=""></a>model_path <span class="ot">&lt;-</span> <span class="st">"modelo_nfuegos.stan"</span></span>
-<span id="cb44-4"><a href=""></a></span>
-<span id="cb44-5"><a href=""></a><span class="co"># Compilamos el modelo</span></span>
-<span id="cb44-6"><a href=""></a>model <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(model_path)</span>
-<span id="cb44-7"><a href=""></a></span>
-<span id="cb44-8"><a href=""></a><span class="co"># Podemos revisar si lo escribimos bien</span></span>
-<span id="cb44-9"><a href=""></a>model<span class="sc">$</span><span class="fu">check_syntax</span>()</span>
-<span id="cb44-10"><a href=""></a></span>
-<span id="cb44-11"><a href=""></a><span class="co"># Creamos una lista nombrada para pasarle los datos. Los nombres de cada</span></span>
-<span id="cb44-12"><a href=""></a><span class="co"># elemento de la lista tienen que ser exactamente los que definimos en </span></span>
-<span id="cb44-13"><a href=""></a><span class="co"># la sección data {}</span></span>
-<span id="cb44-14"><a href=""></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb44-15"><a href=""></a>  <span class="at">N =</span> <span class="fu">nrow</span>(datos),</span>
-<span id="cb44-16"><a href=""></a>  <span class="at">y =</span> datos<span class="sc">$</span>fires,</span>
-<span id="cb44-17"><a href=""></a>  <span class="at">x =</span> datos<span class="sc">$</span>fwi</span>
-<span id="cb44-18"><a href=""></a>)</span>
-<span id="cb44-19"><a href=""></a></span>
-<span id="cb44-20"><a href=""></a><span class="co"># Y muestreamos la posterior</span></span>
-<span id="cb44-21"><a href=""></a>fit_mcmc <span class="ot">&lt;-</span> model<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb44-22"><a href=""></a>  <span class="at">data =</span> stan_data,</span>
-<span id="cb44-23"><a href=""></a>  <span class="at">chains =</span> <span class="dv">4</span>, </span>
-<span id="cb44-24"><a href=""></a>  <span class="at">parallel_chains =</span> <span class="dv">4</span>,</span>
-<span id="cb44-25"><a href=""></a>  <span class="at">iter_warmup =</span> <span class="dv">1000</span>,</span>
-<span id="cb44-26"><a href=""></a>  <span class="at">iter_sampling =</span> <span class="dv">1000</span></span>
-<span id="cb44-27"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-3"><a href=""></a></span>
+<span id="cb44-4"><a href=""></a><span class="co"># Compilamos el modelo</span></span>
+<span id="cb44-5"><a href=""></a>model <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"modelos"</span>, <span class="st">"nfuegos.stan"</span>))</span>
+<span id="cb44-6"><a href=""></a></span>
+<span id="cb44-7"><a href=""></a><span class="co"># Podemos revisar si lo escribimos bien</span></span>
+<span id="cb44-8"><a href=""></a>model<span class="sc">$</span><span class="fu">check_syntax</span>()</span>
+<span id="cb44-9"><a href=""></a></span>
+<span id="cb44-10"><a href=""></a><span class="co"># Creamos una lista nombrada para pasarle los datos. Los nombres de cada</span></span>
+<span id="cb44-11"><a href=""></a><span class="co"># elemento de la lista tienen que ser exactamente los que definimos en </span></span>
+<span id="cb44-12"><a href=""></a><span class="co"># la sección data {}</span></span>
+<span id="cb44-13"><a href=""></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb44-14"><a href=""></a>  <span class="at">N =</span> <span class="fu">nrow</span>(datos),</span>
+<span id="cb44-15"><a href=""></a>  <span class="at">y =</span> datos<span class="sc">$</span>fires,</span>
+<span id="cb44-16"><a href=""></a>  <span class="at">x =</span> datos<span class="sc">$</span>fwi</span>
+<span id="cb44-17"><a href=""></a>)</span>
+<span id="cb44-18"><a href=""></a></span>
+<span id="cb44-19"><a href=""></a><span class="co"># Y muestreamos la posterior</span></span>
+<span id="cb44-20"><a href=""></a>fit_mcmc <span class="ot">&lt;-</span> model<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb44-21"><a href=""></a>  <span class="at">data =</span> stan_data,</span>
+<span id="cb44-22"><a href=""></a>  <span class="at">chains =</span> <span class="dv">4</span>, </span>
+<span id="cb44-23"><a href=""></a>  <span class="at">parallel_chains =</span> <span class="dv">4</span>,</span>
+<span id="cb44-24"><a href=""></a>  <span class="at">iter_warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb44-25"><a href=""></a>  <span class="at">iter_sampling =</span> <span class="dv">1000</span></span>
+<span id="cb44-26"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 4 parallel chains...

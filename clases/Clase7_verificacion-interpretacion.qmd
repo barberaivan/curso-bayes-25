@@ -17,6 +17,14 @@ format:
     fig-height: 4
     fig-align: center
     highlight-style: github
+  pdf:
+    documentclass: article
+    keep-tex: true
+    toc: true
+    number-sections: true
+    fig-width: 5
+    fig-height: 4
+    fig-align: center
 editor:
   markdown:
     wrap: 72
@@ -30,12 +38,13 @@ cmdstanr::register_knitr_engine(override = FALSE)
 
 # Paquetes ----------------------------------------------------------------
 
-library(tidyverse) # gráficos et al
-library(viridis)   # colores
-library(cmdstanr)  # ajustar modelos con Stan
-library(posterior) # resumir posteriores y diagnósticos de MCMC
-library(bayesplot) # visualizar posteriores
-library(DHARMa)    # probabilidad acumulada
+library(tidyverse)  # gráficos et al
+library(viridis)    # colores
+library(cmdstanr)   # ajustar modelos con Stan
+library(posterior)  # resumir posteriores y diagnósticos de MCMC
+library(bayesplot)  # visualizar posteriores
+library(DHARMa)     # probabilidad acumulada
+library(extraDistr) # bbinom, beta-binomial
 
 # Funciones ---------------------------------------------------------------
 
@@ -113,11 +122,10 @@ Ejemplo con el modelo de la cantidad de incendios por año
 
 ```{r}
 # Cargamos datos
-datos <- read.csv(file.path("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
 
 # Compilamos el modelo
-model_path <- "modelo_nfuegos.stan"
-model <- cmdstan_model(model_path)
+model <- cmdstan_model(here::here("modelos", "nfuegos.stan"))
 
 # Creamos una lista nombrada para pasarle los datos. Los nombres de cada
 # elemento de la lista tienen que ser exactamente los que definimos en 
@@ -569,7 +577,7 @@ ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
 [Datos de Alinari et al. 2023]
 
 $$
-\begin{align}
+\begin{aligned}
 y_i &\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 \mu_i &= \frac{1}{1 + \exp(-\eta_i)} \\
 \eta_i &= \alpha + \beta_D \ D_i + \beta_E \ E_i + \beta_H \ H_i\\
@@ -583,7 +591,7 @@ y_i &\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 \text{D: } &\text{Daño por fuego} \\
 \text{E: } &\text{Altidud} \\
 \text{H: } &\text{Altura inicial del árbol} \\
-\end{align}
+\end{aligned}
 $$
 
 ------------------------------------------------------------------------
@@ -594,7 +602,7 @@ Ajustamos el modelo
 rm(list = ls()) # Limpiamos el entorno
 
 # Cargamos datos
-datos <- read.csv(file.path("datos", "alinari_data_espinillo.csv"))
+datos <- read.csv(here::here("datos", "alinari_data_espinillo.csv"))
 
 # Conservamos los que tienen datos de germinación
 datos <- subset(datos, !is.na(germinadas) & sembradas > 0)
@@ -626,7 +634,7 @@ stan_data <- list(
 )
 
 # Compilamos modelo
-model <- cmdstan_model("modelo_germinadas.stan")
+model <- cmdstan_model(here::here("modelos", "germinadas.stan"))
 
 # Muestreamos
 fit <- model$sample(data = stan_data, parallel_chains = 4)
@@ -772,6 +780,175 @@ Para realizar otras predicciones hay que ponerse creativo al crear la tabla con 
 
 ------------------------------------------------------------------------
 
-## Verificación predictiva previa
+## Simulaciones previas
 
-*Prior predictive check*, estrategias para elegir la previa.
+<br> 
+
+Al definir las previas de un modelo con ajuste bayesiano necesitamos inicialmente posicionarnos en relación a qué efecto deseamos de las previas. Algunas opciones pueden ser:
+
+-   reflejar conocimiento previo sobre el sistema,
+
+-   restringir levemente los parámetros para que tomen valores razonables,
+
+-   restringir fuertemente los parámetros para que el modelo sea estimable, 
+
+-   influir lo menos posible en el resultado, limitándose a garantizar la convergencia de algoritmos de estimación.
+
+
+------------------------------------------------------------------------
+
+Independientemente de la postura, para definir previas necesitamos poder traducir información de formas variadas a una distribución de probabilidad. Salvo que contemos con una intuición algebraica y probabilística envidiable, necesitamos graficar las implicancias de las previas en los modelos. Claramente, en contextos donde no hay información previa abundante, conviene investigar un poco qué tipo de previas se recomiendan para el tipo de modelo en cuestión. Para muchas estructuras hay recomendaciones disponibles.  
+
+<br>
+
+En última instancia, si la definición de previas nos quita el sueño, podemos ajustar el modelo con distintas previas y comparar resultados. Esto incluso puede plantearse como un problema de comparación de modelos: cambiar la previa es equivalente a cambiar el modelo. 
+
+------------------------------------------------------------------------
+
+Para mostrar estrategias para definir previas utilizaremos los modelos ajustados arriba para el número de incendios y la cantidad de semillas germinadas. Supondremos que no hay mucha información previa y que deseamos distribuciones previas con poco efecto en el ajuste, de tal forma que la posterior esté dominada por la verosimilitud. 
+
+------------------------------------------------------------------------
+  
+### Simulaciones previas 1: incendios
+
+<br> 
+
+El modelo estaba definido de la siguiente manera:
+
+<br>
+
+$$
+\begin{aligned}
+y_i &\sim \text{poisson}(\lambda_i) \\
+\lambda_i &= \text{exp}(\alpha + \beta \  FWI_i) \\
+\\
+\alpha &\sim \text{normal}(\mu_{\alpha}, \sigma_{\alpha}) \\
+\beta &\sim \text{normal}(\mu_{\beta}, \sigma_{\beta}) \\
+\\
+\mu_{\alpha} &= \ ..., \sigma_{\alpha} = \ ... \\
+\mu_{\beta} &= \ ..., \sigma_{\beta} = \ ... 
+\end{aligned}
+$$
+
+------------------------------------------------------------------------
+
+Si deseamos previas que generen valores razonables de $\lambda$ sin afectar mucho el resultado, estamos buscando *previas levemente regularizadoras*. 
+
+Un buen primer paso es intentar interpretar los parámetros del modelo. Si eso es muy difícil, conviene graficar. 
+
+Consideremos que $\alpha = \log(\lambda)$ cuando $FWI = 0$. De esta manera, 
+$$\lambda_{FWI=0} \sim \text{log-normal}(\mu_{\alpha}, \sigma_{\alpha}).$$
+Entonces, graficamos la lognormal variando sus parámetros (expresados en escala log).
+
+------------------------------------------------------------------------
+
+Para graficar previas o sus implicancias rápidamente, resulta de gran utilidad la función `curve`, que evalúa una expresión conteniendo "x".
+
+```{r}
+mu_a <- log(10) # la mediana de la lognormal sería 10
+sigma_a <- 2
+curve(dlnorm(x, mu_a, sigma_a), from = 0, to = 50)
+```
+
+Con $\sigma_{\alpha} = 2$ la distribución se hace muy amplia. No nos dejemos engañar por su pico cerca de cero. Si bien en esa zona la densidad es alta, la masa de probabilidad (área bajo la curva) es baja, por lo que esta previa no sesgaría la estimación hacia cero si hay al menos unos pocos datos. 
+
+------------------------------------------------------------------------
+
+Pero si nos interesa no sesgar el resultado, otra estrategia es centrar la previa en la media de los datos, y darle un desvío grande:
+
+```{r}
+# Cargamos datos
+datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
+
+mu_a <- log(mean(datos$fires)) 
+sigma_a <- 2
+curve(dlnorm(x, mu_a, sigma_a), from = 0, to = 50)
+```
+
+Si queremos informar aún menos, podemos aumentar un poco más $\sigma_{\alpha}.
+
+------------------------------------------------------------------------
+
+Ahora nos centramos en $\beta$. Por suerte, para este modelo (GLM con enlace log), $\beta$ tiene una interpretación clara: $\exp(\beta)$ es el factor en que aumenta $\lambda$ cuando $x = FWI$ aumenta una unidad. Si suponemos que $\lambda$ se duplica al aumentar el $FWI$ una unidad, $\beta = \log(2)$. Pero como el $FWI$ varía entre 0 y \~50, ese aumento sería absurdamente grande. Quizás es más sensato pensar en aumentos más pequeños. Probemos un aumento de 1.1 $\beta = \log(1.1)$. 
+
+Nuevamente, $\exp(\beta)$ sigue una distribución log-normal:
+
+```{r}
+mu_b <- log(1.1)
+sigma_b <- 1
+curve(dlnorm(x, mu_b, sigma_b), from = 0, to = 5)
+```
+
+Esta previa tiene mediana y media positiva (1.1), pero también permite valores menores a 1, que implican disminución del número de incendios con el $FWI$. Si esto no nos parece razonable, podemos modificar la previa para dejar poca probabilidad abajo de 1 (restricción blanda) o truncar la previa en 1, para que sólo permita aumentos. Iremos por el primer enfoque.
+
+```{r}
+mu_b <- log(1.1)
+sigma_b <- 0.05
+curve(dlnorm(x, mu_b, sigma_b), from = 0, to = 5)
+```
+
+Ahora es una previa más razonable, quizás algo informativa. Pero cuán informativa es dependerá de cuán informativos sean los datos.
+
+Ahora graficamos las previas elegidas para $\alpha$ y $\beta$ (escala log, son normales):
+
+```{r}
+par(mfrow = c(1, 2))
+curve(dnorm(x, mu_a, sigma_a), from = -10, to = 15, xlab = expression(alpha),
+      ylab = "Densidad")
+curve(dnorm(x, mu_b, sigma_b), from = -1, to = 1, xlab = expression(beta),
+      ylab = NA)
+par(mfrow = c(1, 1))
+```
+
+------------------------------------------------------------------------
+
+Ahora podemos simular valores de estas previas para explorar qué curvas de $\lambda = f(FWI)$ implican:
+
+```{r}
+light_col <- rgb(0, 0, 0, 0.1)
+
+# gráfico inicial
+a <- rnorm(1, mu_a, sigma_a)
+b <- rnorm(1, mu_b, sigma_b)
+curve(exp(a + b * x), from = 0, to = 20, ylim = c(0, 100), col = light_col,
+      xlab = "FWI", ylab = expression(lambda)) 
+
+# Repetimos con muchas muestras, usando el argumento "add = TRUE" en curve()
+for (i in 1:200) {
+  a <- rnorm(1, mu_a, sigma_a)
+  b <- rnorm(1, mu_b, sigma_b)
+  curve(exp(a + b * x), col = light_col, add = T)
+}
+```
+
+Muchas curvas parecen poco razonables. Pero bueno, estábamos buscando previas poco informativas, ¿no?
+
+------------------------------------------------------------------------
+
+También podemos simular datos utilizando los valores observados de la predictora. Esto implica simular de la distribución predictiva previa (análoga a la distribución predictiva posterior).
+
+```{r}
+N <- nrow(datos)
+S <- 10000
+ysim <- matrix(NA, N, S)
+
+for (i in 1:S) {
+  a <- rnorm(1, mu_a, sigma_a)
+  b <- rnorm(1, mu_b, sigma_b)
+  lambda <- exp(a + b * datos$fwi)
+  ysim[, i] <- rpois(N, lambda)
+}
+
+hist(as.numeric(ysim))
+quantile(as.numeric(ysim), probs = c(0.9, 0.95, 0.98))
+```
+
+Los datos simulados pueden tomar valores muy altos. Esto puede ser razonable si no queremos que la previa influya mucho en los resultados.
+
+------------------------------------------------------------------------
+
+NEGBIN, phi
+
+Beta-Binomial check, germinadas. enlace logit, pred estandarizadas.
+
+R2
