@@ -45,6 +45,7 @@ library(posterior)  # resumir posteriores y diagnósticos de MCMC
 library(bayesplot)  # visualizar posteriores
 library(DHARMa)     # probabilidad acumulada
 library(extraDistr) # bbinom, beta-binomial
+library(logitnorm)  # logit-normal
 
 # Funciones ---------------------------------------------------------------
 
@@ -117,6 +118,8 @@ Para cada observación $y_i$ (con $i \in \{1, ..., N\}$), y con cada muestra de 
 Si queremos utilizar esta distribución para verificar el modelo, tenemos que simular nuevos datos utilizando los mismos valores de las predictoras ($x$) asociados a cada observación ($x_i$).
 
 ------------------------------------------------------------------------
+
+### Modelo de incendios
 
 Ejemplo con el modelo de la cantidad de incendios por año
 
@@ -463,7 +466,7 @@ Ejemplo: nos interesa evaluar cómo varía $\lambda$ en función del FWI.
 <br>
 
 Cada muestra $s$ de la posterior ($\{\alpha_s, \beta_s\}$) define una función 
-$$\lambda_s = f_s(\text{FWI}) = \exp(\alpha_s + \beta_s \ \text{FWI})$$.
+$$\lambda_s = f_s(\text{FWI}) = \exp(\alpha_s + \beta_s \ \text{FWI}).$$
 
 <br>
 
@@ -526,7 +529,7 @@ for (i in 1:N) {
  
 # Ahora graficamos la predicción media y su incertidumbre
 ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
-  geom_ribbon(alpha = 0.4, color = NA) +
+  geom_ribbon(alpha = 0.4, color = NA, fill = "orange") +
   geom_line() +
   labs(x = "FWI", y = expression(lambda)) +
   # Agregamos los datos
@@ -554,9 +557,9 @@ pred$y_upr <- apply(ysim_seq, 1, quantile, probs = 0.975)
 ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
   # Intervalo para y
   geom_ribbon(aes(fwi, ymin = y_lwr, ymax = y_upr), inherit.aes = F, 
-              alpha = 0.3, color = NA) +
+              alpha = 0.3, color = NA, fill = "blue") +
   # Intervalo para lambda
-  geom_ribbon(alpha = 0.4, color = NA) +
+  geom_ribbon(alpha = 0.6, color = NA, fill = "orange") +
   geom_line() +
   labs(x = "FWI", y = expression(lambda)) +
   # Agregamos los datos
@@ -572,7 +575,80 @@ ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
 
 ------------------------------------------------------------------------
 
-### Ejemplo con más predictoras
+### $R^2$ bayesiano (Gelman et al. 2019)
+
+<br>
+
+El coeficiente de determinación bayesiano se define así:
+
+$$
+R^2 = \frac{\text{varianza de los predichos}}{\text{varianza de los predichos} + \text{varianza residual}},
+$$
+
+donde los predichos son la esperanza (media) predicha para cada observación. La varianza de los predichos se toma a lo largo de las observaciones ($N$ predichos). La varianza residual es la varianza *estimada* para cada observación. La varianza residual se promedia entre las $N$ observaciones.
+
+Representa la proporción de la variabilidad en la distribución estimada de los datos que es explicada por el modelo.
+
+------------------------------------------------------------------------
+
+### $R^2$ a partir de muestras de la posterior
+
+<br>
+
+Con una estimación bayesiana basada en muestras de la posterior $s \in \{1, \dots, S\}$, el $R^2$ se puede calcular para cada muestra:
+
+$$
+R_s^2 = \frac{\mathrm{Var}(\boldsymbol{\mu_s})}{\mathrm{Var}(\boldsymbol{\mu_s}) + \frac{1}{N} \sum(\boldsymbol{\tau}_s)},
+$$
+
+donde $\boldsymbol{\mu}_s$ es el vector de largo $N$ con la esperanza estimada para cada observación, calculada con el vector de parámetros $\boldsymbol{\theta}_s$. $\boldsymbol{\tau}_s$ es el vector de varianzas estimadas para cada observación, también basado en $\boldsymbol{\theta}_s$. En el caso de un modelo normal, sería un vector de $\sigma^2$. (Nótese que en la mayor parte de las distribuciones la varianza varía con la media, por lo que suele variar entre observaciones.)
+
+Estimando $R_s^2$ para cada $s$, obtenemos su distribución posterior.
+
+------------------------------------------------------------------------
+
+Importante: dado que el $R^2$ bayesiano está basado en la varianza y media estimadas, para que sea confiable, el modelo debe representar los datos de forma adecuada. Por ejemplo, un modelo que subestima la variabilidad en los datos va a sobreestimar el $R^2$. Por eso es importante verificar el modelo con residuos DHARMa y hacer lo posible por que cuantifique de forma razonable la variabilidad.
+
+------------------------------------------------------------------------
+
+$R^2$ para el modelo de incendios.
+
+```{r}
+# Vector para almacenar el R2
+R2 <- numeric(S)
+
+# Loop sobre muestras de la posterior
+for (i in 1:S) {
+  # predichos para cada observación
+  mu <- exp(d$a[i] + d$b[i] * datos$fwi) # es lambda!
+  
+  # varianza de los predichos = varianza explicada
+  var_fit <- var(mu)
+  
+  # varianza residual para cada observación. Esto depende de la 
+  # distribución. En la poisson, la varianza es igual al media
+  var_res <- mu # sólo para ser explícitos
+  # y tomamos su media entre observaciones
+  var_res_mean <- mean(var_res)
+  
+  # R2 
+  R2[i] <- var_fit / (var_fit + var_res_mean)
+}
+
+plot(density(R2, from = 0, to = 1), main = NA, xlab = "R2")
+```
+
+El $R^2$ da alto, pero hay que considerar que el modelo subestima la variabilidad en los datos (variabilidad no explicada). Si modeláramos con una binomial negativa, que admite más variabilidad que una poisson, el $R^2$ sería notablemente más bajo.
+
+------------------------------------------------------------------------
+
+Formulación del $R^2$ bayesiano:
+
+Gelman, A., Goodrich, B., Gabry, J., & Vehtari, A. (2019). R-squared for Bayesian regression models. The American Statistician.
+
+------------------------------------------------------------------------
+
+### Modelo de germinación (más de una predictora)
 
 [Datos de Alinari et al. 2023]
 
@@ -584,7 +660,7 @@ y_i &\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 \\
 \alpha &\sim \text{normal}(0, 10) \\
 \beta_. &\sim \text{normal}(0, 5) \\
-\phi &\sim \text{log-normal}(\log(10), 2) \\
+\phi &\sim \text{log-normal}(\log(7), 1.5) \\
 \\
 \text{y: } &\text{Número de semillas germinadas} \\
 \text{N: } &\text{Número de semillas sembradas} \\
@@ -687,10 +763,56 @@ plot(res)
 plotResiduals(res, form = datos$danio, rank = F)
 plotResiduals(res, form = datos$altitud, rank = F)
 plotResiduals(res, form = datos$altura, rank = F)
+```
 
-# Comparamos previa vs posterior de phi
+------------------------------------------------------------------------
+
+Comparamos posterior vs. previa de $\phi$
+
+```{r}
+# phi
 plot(density(d$phi, from = 0), main = NA, xlab = expression(phi))
-curve(dlnorm(x, log(7), 1.5), add = T, col = 4)
+curve(dlnorm(x, log(7), 1.5), add = T, col = 4) # previa definida en Stan
+```
+
+------------------------------------------------------------------------
+
+$R^2$
+
+```{r}
+# Vector para almacenar el R2
+R2 <- numeric(S)
+
+# Por comodidad, definimos las sembradas
+SS <- datos$sembradas[1]
+
+# Loop sobre muestras de la posterior
+for (i in 1:S) {
+  # En la beta-binomial, la media es mu * size,
+  # siendo size la cantidad de sembradas
+  
+  # predichos para cada observación
+  mu <- plogis( # equivale a inv_logit = logit inverso
+    d$a[i] + 
+    d$bD[i] * datos$D + d$bE[i] * datos$E + d$bH[i] * datos$H 
+  )
+  media <- mu * SS # 120 sembradas
+  
+  # varianza de los predichos = varianza explicada
+  var_fit <- var(media)
+  
+  # varianza residual para cada observación. En la beta-binomial, la 
+  # varianza se define así:
+  var_res <- SS * mu * (1 - mu) * ((N + d$phi[i]) / (1 + d$phi[i]))
+  
+  # y tomamos su media entre observaciones
+  var_res_mean <- mean(var_res)
+  
+  # R2 
+  R2[i] <- var_fit / (var_fit + var_res_mean)
+}
+
+plot(density(R2, from = 0, to = 1), main = NA, xlab = "R2")
 ```
 
 ------------------------------------------------------------------------
@@ -755,12 +877,12 @@ pred$y_upr <- apply(y_mat_p, 1, quantile, probs = 0.975)
 datos$prop <- datos$germinadas / datos$sembradas
 
 # Graficamos 
-ggplot(pred, aes(danio, mu, ymin = mu_lwr, ymax = mu_upr)) +
+ggplot(pred, aes(danio, mu_mean, ymin = mu_lwr, ymax = mu_upr)) +
   # Intervalo de predicción (posterior predictive)
   geom_ribbon(aes(danio, ymin = y_lwr, ymax = y_upr), inherit.aes = F, 
-              color = NA, alpha = 0.3) +
+              color = NA, alpha = 0.3, fill = "blue") +
   # Intervalo para la media
-  geom_ribbon(color = NA, alpha = 0.3) + 
+  geom_ribbon(color = NA, alpha = 0.7, fill = "orange") + 
   # Media de la media
   geom_line() +
   # datos
@@ -771,6 +893,9 @@ ggplot(pred, aes(danio, mu, ymin = mu_lwr, ymax = mu_upr)) +
     x = "Daño (%)"
   )
 ```
+
+
+------------------------------------------------------------------------
 
 En esta predicción se fijaron en su media las demás predictoras. Esto hace que la predicción no sea comparable con los datos, ya que en los datos, las predictoras sí varían. En este caso, los datos no discrepan de la predicción porque las otras predictoras tienen efectos muy pequeños.
 
@@ -947,8 +1072,250 @@ Los datos simulados pueden tomar valores muy altos. Esto puede ser razonable si 
 
 ------------------------------------------------------------------------
 
-NEGBIN, phi
+Para ilustrar un ejemplo de previa poco intuitiva, alteraremos el modelo: en vez de suponer una distribución poisson, supondremos binomial negativa, que admite mayor dispersión mediante el parámetro $phi$:
 
-Beta-Binomial check, germinadas. enlace logit, pred estandarizadas.
+$$
+\begin{aligned}
+y_i &\sim \text{binomial negativa}(\lambda_i, \phi) \\
+\lambda_i &= \text{exp}(\alpha + \beta \  FWI_i) \\
+\\
+\alpha &\sim \text{normal}(\mu_{\alpha}, \sigma_{\alpha}) \\
+\beta &\sim \text{normal}(\mu_{\beta}, \sigma_{\beta}) \\
+\phi &\sim \text{gama}(a = 1 / \tau, b = 1 / (\mu_{\phi} \ \tau)) \\
+\\
+\mu_{\alpha} &= \ ..., \sigma_{\alpha} = \ ... \\
+\mu_{\beta} &= \ ..., \sigma_{\beta} = \ ... \\
+\mu_{\phi} &= \ ..., \tau = \ ...
+\end{aligned}
+$$
 
-R2
+------------------------------------------------------------------------
+
+La varianza de la binomial negativa, con media $\lambda$ se define como
+
+$$\mathrm{Var}(Y) = \lambda + \frac{\lambda^2}{\phi},$$
+
+equivalente a
+
+$$\mathrm{Var}(Y) = \lambda \left(1 + \frac{\lambda}{\phi} \right).$$
+
+Por lo que $\phi$ tiene una relación inversa con la varianza, y se puede decir que es un parámetro de precisión (opuesto a dispersión).
+
+------------------------------------------------------------------------
+
+Podemos evaluar las implicancias de $\phi$ fijando $\lambda$ y visualizando la pmf.
+
+```{r}
+# usamos dnbinom de extraDistr, que la parametriza igual que Stan's neg_binomial_2.
+# size = phi
+x <- 0:100
+
+y <- dnbinom(x, mu = 10, size = 1000)
+barplot(y ~ x); abline(v = 10, col = "red", lty = 2, lwd = 1.5)
+# Con size alto tiende a poisson
+
+y <- dnbinom(x, mu = 10, size = 1)
+barplot(y ~ x); abline(v = 10, col = "red", lty = 2, lwd = 1.5)
+
+y <- dnbinom(x, mu = 10, size = 0.1)
+barplot(y ~ x); abline(v = 10, col = "red", lty = 2, lwd = 1.5)
+
+# ChatGPT recomendó una previa gama(2, 0.1), lo que implica
+# a = 2 = 1 / 0.5
+# b = 0.1 = 1 / (0.5 * 20) 
+# lo que implica mu_phi = 20, tau = 0.5
+
+lambda <- 20 # probar cambiarlo
+mu_phi <- 20 # nos gustan?
+tau <- 0.5
+
+phi <- rgamma(1, 1 / tau, 1 / (mu_phi * tau))
+curve(
+  dnbinom(x, size = phi, mu = 10), # este mu es lambda
+  to = lambda * 10, col = light_col, ylim = c(0, 0.5)
+) 
+
+for (i in 1:200) {
+  phi <- rgamma(1, 1 / tau, 1 / (mu_phi * tau))
+  curve(dnbinom(x, size = phi, mu = 10), add = T, col = light_col) # este mu es lambda
+}
+# Para ser menos informativo, prefiero mu_phi = 20, tau = 1 (tau es la dispersión
+# de la gama, por lo que mi previa es más amplia que la recomendada por ChatGPT)
+```
+
+------------------------------------------------------------------------
+
+### Simulaciones previas 2: germinación
+
+<br>
+
+Retomemos el modelo de semillas germinadas de Alinari et al. 2024:
+
+$$
+\begin{aligned}
+y_i &\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
+\mu_i &= \frac{1}{1 + \exp(-\eta_i)} \\
+\eta_i &= \alpha + \beta_D \ D_i + \beta_E \ E_i + \beta_H \ H_i\\
+\\
+\alpha &\sim \text{normal}(0, 10) \\
+\beta_. &\sim \text{normal}(0, 5) \\
+\phi &\sim \text{log-normal}(\log(10), 2) \\
+\\
+\text{y: } &\text{Número de semillas germinadas} \\
+\text{N: } &\text{Número de semillas sembradas} \\
+\text{D: } &\text{Daño por fuego} \\
+\text{E: } &\text{Altidud} \\
+\text{H: } &\text{Altura inicial del árbol} \\
+\end{aligned}
+$$
+
+------------------------------------------------------------------------
+
+Comencemos explorando previas para el intercepto ($\alpha$). Recordemos que 
+
+$$
+\begin{aligned}
+\text{logit}^{-1}(x) &= \frac{1}{1 + \exp(-x)} \\
+\text{logit}^{-1}(0) &= 0.5 \\
+\text{logit}^{-1}(5) &= 0.9933071 \\
+\text{logit}^{-1}(-5) &= 1 - 0.9933071 \\
+\text{logit}^{-1}(+\infty) &\approx 1 \\
+\text{logit}^{-1}(-\infty) &\approx 0 \\
+\end{aligned}
+$$
+
+------------------------------------------------------------------------
+
+Con predictoras estandarizadas (media = 0), $\alpha$ es la probabilidad de germinación ($\mu$) cuando las predictoras están en sus medias.
+
+Si $\alpha \sim \text{normal}()$, entonces $\text{logit}^{-1}(\alpha) \sim \text{logit-normal}()$.
+
+Si la media de la previa de $\alpha$ es 0, a medida que aumentamos su desvío acumulamos masa cerca de $\mu = 0$ y $\mu = 1$:
+
+```{r}
+# usamos el paquete logitnorm para la distribución logit-normal
+
+mu_a <- 0
+sigma_a <- 1.4
+curve(dlogitnorm(x, mu_a, sigma_a))
+
+sigma_a <- 1.8
+curve(dlogitnorm(x, mu_a, sigma_a))
+
+sigma_a <- 10
+curve(dlogitnorm(x, mu_a, sigma_a))
+```
+
+Si bien puede resultar poco intuitivo, la previa con sd = 10 resulta muy poco informativa. Permite que se estimen probabiliades extremas si los datos lo indican.
+
+------------------------------------------------------------------------
+
+Yendo a los $\beta$, una gran ventaja de estandarizar las predictoras es que sus previas pueden ser todas iguales, a falta de información que sugiera que lo sean.
+
+Para explorar previas sobre $\beta$ conviene asumir el efecto parcial de una predictora, fijando las demás en sus medias y  $\alpha = 0$.
+
+Como seremos indiferentes al signo, las previas de $\beta$ estarán centradas en 0.
+
+```{r}
+sigma_b <- 0.5
+
+b <- rnorm(1, 0, sigma_b)
+
+# plogis es inv_logit en R.
+# de -3 a 3 porque ese rango suele ocupar una variable estandarizada
+# cuando es aproximadamente normal.
+curve(plogis(b * x), from = -3, to = 3, ylim = c(0, 1),
+      col = light_col)
+
+for (i in 1:200) {
+  b <- rnorm(1, 0, sigma_b)
+  curve(plogis(b * x), col = light_col, add = T)
+}
+
+
+# sigma mayor
+sigma_b <- 2
+b <- rnorm(1, 0, sigma_b)
+curve(plogis(b * x), from = -3, to = 3, ylim = c(0, 1),
+      col = light_col)
+for (i in 1:200) {
+  b <- rnorm(1, 0, sigma_b)
+  curve(plogis(b * x), col = light_col, add = T)
+}
+
+# y mayor
+sigma_b <- 5
+b <- rnorm(1, 0, sigma_b)
+curve(plogis(b * x), from = -3, to = 3, ylim = c(0, 1),
+      col = light_col)
+for (i in 1:200) {
+  b <- rnorm(1, 0, sigma_b)
+  curve(plogis(b * x), col = light_col, add = T)
+}
+```
+
+Igual que con $\alpha$, una previa amplia para $\beta$ no sesga la posterior hacia valores extremos; simplemente no impide que los datos lo sugieran. No es conveniente si tenemos escasos datos. 
+
+------------------------------------------------------------------------
+
+Por último, debemos definir la previa para $\phi$, el parámetro de precisión de la distribución beta-binomial. La beta-binomial es una binomial con mayor dispersión (regulada por $\phi$), que surge de suponer que la probabilidad de éxito ($\pi$, aquí $\mu$) de una binomial sigue una distribución beta. Su varianza es
+
+$$\mathrm{Var}(Y) = N \mu (1 - \mu) \left( \frac{N + \phi}{1 + \phi} \right),$$
+
+donde $N$ es el número de experimentos, $\phi$ es un parámetro de precisión ($\alpha + \beta$ en la distribución beta) y $\mu$ es la probabilidad de éxito. (La media es $\mu \times N$.)
+
+Graficaremos la pmf suponiendo $N = 500$ y $\mu = 0.5$.
+
+------------------------------------------------------------------------
+
+```{r}
+# usamos extraDistr
+
+# dbetabinom, se parametriza con alpha y beta, no con mu y phi.
+# Se definen así:
+mu <- 0.5
+N <- 500  # N
+
+
+phi <- rlnorm(1, log(10), 2)
+alpha <- mu * phi      # necesarios para dbbinom
+beta <- (1 - mu) * phi
+curve(
+  dbbinom(x, size = N, alpha = alpha, beta = beta),
+  to = N, col = light_col, ylim = c(0, 0.5)
+) 
+
+for (i in 1:200) {
+  phi <- rlnorm(1, log(10), 2)
+  alpha <- mu * phi   
+  beta <- (1 - mu) * phi
+  curve(dbbinom(x, size = N, alpha = alpha, beta = beta),
+        col = light_col, add = T)
+}
+```
+
+La previa definida es muy amplia; permite muchas distribuciones en que los valores se acumulan en los extremos (todos éxitos o todos fracasos). Podemos encogerla.
+
+------------------------------------------------------------------------
+
+```{r}
+# usamos sd = 1.5 en vez de 2 en la previa lognormal de phi
+
+phi <- rlnorm(1, log(10), 1.5)
+alpha <- mu * phi      # necesarios para dbbinom
+beta <- (1 - mu) * phi
+curve(
+  dbbinom(x, size = N, alpha = alpha, beta = beta),
+  to = N, col = light_col, ylim = c(0, 0.1)
+) 
+
+for (i in 1:200) {
+  phi <- rlnorm(1, log(10), 1)
+  alpha <- mu * phi   
+  beta <- (1 - mu) * phi
+  curve(dbbinom(x, size = N, alpha = alpha, beta = beta),
+        col = light_col, add = T)
+}
+```
+
+Esta es un poco menos extrema.

@@ -600,7 +600,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb16-2"><a href=""></a><span class="fu">sum</span>(draws_table<span class="sc">$</span>alpha <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.7177</code></pre>
+<pre><code>[1] 0.7152</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -608,7 +608,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb18-2"><a href=""></a><span class="fu">sum</span>(draws_table<span class="sc">$</span>alpha <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> draws_table<span class="sc">$</span>alpha <span class="sc">&lt;</span> <span class="fl">0.5</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.6146</code></pre>
+<pre><code>[1] 0.6092</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -617,7 +617,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb20-3"><a href=""></a><span class="fu">sum</span>(ebeta <span class="sc">&gt;</span> <span class="fl">1.2</span>) <span class="sc">/</span> nsim </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.117</code></pre>
+<pre><code>[1] 0.1161</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -627,7 +627,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb22-4"><a href=""></a><span class="fu">sum</span>(lambda <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.6517</code></pre>
+<pre><code>[1] 0.648</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -638,7 +638,7 @@ p(\beta \mid y) &amp;= \int p(\alpha, \beta \mid y) \ \mathrm{d}\alpha.
 <span id="cb24-5"><a href=""></a><span class="fu">sum</span>(ysim <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.5073</code></pre>
+<pre><code>[1] 0.507</code></pre>
 </div>
 </div>
 <p>Sin utilizar muestras, todo esto se calcularía evaluando integrales sobre las marginales o sobre transformaciones de las marginales.</p>
@@ -1802,6 +1802,26 @@ Total execution time: 0.2 seconds.</code></pre>
 </div>
 </div>
 </section>
+<section class="slide level2">
+
+<p>Comparación entre previas y posteriores (marginales)</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href=""></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb78-2"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(d<span class="sc">$</span>alpha), <span class="at">xlab =</span> <span class="fu">expression</span>(alpha), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>))</span>
+<span id="cb78-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">add =</span> T, <span class="at">col =</span> <span class="dv">4</span>)</span>
+<span id="cb78-4"><a href=""></a></span>
+<span id="cb78-5"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(d<span class="sc">$</span>beta), <span class="at">xlab =</span> <span class="fu">expression</span>(beta), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb78-6"><a href=""></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, <span class="dv">0</span>, <span class="fl">0.1</span>), <span class="at">add =</span> T, <span class="at">col =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href=""></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<img data-src="Clase6_MCMC_files/figure-revealjs/unnamed-chunk-29-1.png" width="672" class="r-stretch"></section>
 <section id="trabajo-práctico-6" class="slide level2">
 <h2>Trabajo Práctico 6</h2>
 

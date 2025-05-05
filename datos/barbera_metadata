@@ -1,8 +1,0 @@
-area_ha: área quemada por año (ha), total o por tipo de vegetación, según la tabla.
-fires: número de incendios >= 10 ha intersectando el área de estudio.
-pp: precipitación acumulada en verano (diciembre-marzo, mm)
-temp: temperatura máxima mensual promediada en diciembre-marzo (°C)
-vpd: déficit de presión de vapor mensual promediado en diciembre-marzo (kPa)
-fwi: Fire Weather Index, promedio de valores diarios en diciembre-marzo (adimensional)
-vegetation_class: tipo de vegetación.
-area_ha_available: área quemable por tipo de vegetación, suponiendo que no cambia en el tiempo (ha).

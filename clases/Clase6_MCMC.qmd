@@ -1266,4 +1266,22 @@ sum(qy >= 2) / nsim
 
 ------------------------------------------------------------------------
 
+Comparación entre previas y posteriores (marginales)
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3.5
+
+par(mfrow = c(1, 2))
+plot(density(d$alpha), xlab = expression(alpha), main = NA, xlim = c(-3, 3))
+curve(dnorm(x, 0, 1), add = T, col = 4)
+
+plot(density(d$beta), xlab = expression(beta), main = NA, xlim = c(-0.5, 0.5))
+curve(dnorm(x, 0, 0.1), add = T, col = 4)
+par(mfrow = c(1, 1))
+
+```
+
+------------------------------------------------------------------------
+
 ## Trabajo Práctico 6

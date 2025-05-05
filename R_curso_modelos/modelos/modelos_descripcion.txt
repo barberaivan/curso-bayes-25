@@ -1,0 +1,74 @@
+Modelos de ejemplo/molde para los trabajos prácticos de las unidades 6 y 7.
+Listados de menor a mayor complejidad (pero el gradiente es borroso).
+
+[Todos están codificados en UTF-8; si se ven mal las tildes, ir a
+File > Reopen with Encoding... y elegir UTF-8]
+
+# ------------------------------------------------------------------------
+
+nfuegos
+
+Número de incendios >= 10 ha en el NO de la Patagonia argentina en función del
+Fire Weather Index (FWI, un índice de peligrosidad de incendios).
+Modelo tomado de ejemplo en las clases 5 a 7. Es de los más sencillos.
+
+nfuegos_comparacion
+
+Comparación de dos modelos, para demostrar cómo utilizar PSIS-LOO y K-fold-CV,
+correspondiente a la unidad latente 8. Los modelos son sencillos, pero el código
+para compararlos es más elaborado.
+
+# ------------------------------------------------------------------------
+
+germinadas
+
+Número de semillas de espinillo germinadas sobre un total de sembradas, en
+función del daño posfuego de la planta madre, su altura prefuego y la altitud
+en que se encontraba. Tomado de Alinari et al. 2024.
+
+La variable respuesta se modela con una beta-binomial, que es apropiada cuando
+tenemos más variabilidad no explicada que lo que admite la binomial.
+
+Aumenta la complejidad al incluirse 3 predictoras. Se muestra cómo graficar
+predicciones parciales. Se utilizan las predictoras estandarizadas, y son todas
+continuas.
+
+# ------------------------------------------------------------------------
+
+tabaquillos
+
+Crecimiento de tabaquillos adultos en un período de 15 años en función del
+manejo (conservación vs. ganadería extensiva), ocurrencia de fuego, altitud,
+cobertura boscosa y la altura inicial del árbol (Renison et al. 2025). Se
+muestra cómo incluir dos factores y su interacción (manejo y fuego). Se modela
+la respuesta con una distribución t de student porque los datos presentan
+valores extremos.
+
+# ------------------------------------------------------------------------
+
+area_quemada
+
+Área quemada anual relativa (quemado / quemable) por tipo de vegetación en el NO
+de Patagonia andina, en función de variables climáticas (Barberá et al. 2025).
+Se utiliza un GLM de distribución beta inflada en cero (hurdle), y se modela
+el efecto del tipo de vegetación como efecto fijo y como efecto aleatorio
+(no pooling y partial pooling.)
+
+# ------------------------------------------------------------------------
+
+cuencas
+
+Análisis de la dinámica del caudal en la estación seca en cuencas de las
+Sierras Grandes de Córdoba (Cingolani et al. 2023). Se modela cómo decae el
+caudal a lo largo de 7 semanas utilizando una función no lineal elegante
+(decaimiento exponencial de Weibull). Esta función varía sus parámetros entre
+cuencas. Se ajustan 3 modelos:
+  (1) no pooling,
+  (2) partial pooling,
+  (3) partial pooling con predictora a nivel de cuenca.
+
+Es un ejemplo de modelado no lineal jerárquico. Los modelos 2 y 3 (jerárquicos)
+implementan la parametrización no centrada en Stan, una estrategia de
+programación altamente recomendada. Se muestra cómo calcular algunas predicciones
+poco ortodoxas, como la derivada de la función con respecto al tiempo. Se grafica
+esta derivada en función de la rocosidad de la cuenca.

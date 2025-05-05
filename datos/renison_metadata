@@ -1,9 +1,0 @@
-plot: ID de la parcela de muestreo.
-surv: supervivencia (0 = muerto, 1 = vivo) a los 15 años.
-height: altura inicial (en 2003, cm).
-height2: altura final (en 2018, cm).
-dieback: porcentaje de copa muerto (%).
-manag: manejo del área en donde se encuentra la parceal; ranching = ganadería extensiva.
-fire: ocurrencia de fuego a nivel de parcela, no a nivel de árbol (a veces una parcela se quema pero algún árbol zafa).
-elev: altitud de la parcela (m s.n.m.).
-pforest: cobertura de bosque en la parcela (%).

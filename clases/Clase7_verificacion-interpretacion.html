@@ -237,6 +237,7 @@ p(\tilde{y} \mid y) = \int p(\tilde{y} \mid \theta) \ p(\theta \mid y) \ \mathrm
 </section>
 <section class="slide level2">
 
+<h3 id="modelo-de-incendios">Modelo de incendios</h3>
 <p>Ejemplo con el modelo de la cantidad de incendios por año</p>
 <div class="cell">
 <details class="code-fold">
@@ -715,7 +716,7 @@ Processing complete, no problems detected.</code></pre>
 <span id="cb22-9"><a href=""></a>(prob <span class="ot">&lt;-</span> <span class="fu">ecdf_post</span>(datos<span class="sc">$</span>fires[fila]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.06775</code></pre>
+<pre><code>[1] 0.806</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -727,7 +728,7 @@ Processing complete, no problems detected.</code></pre>
 <span id="cb24-6"><a href=""></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.02033463</code></pre>
+<pre><code>[1] 0.7215815</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -878,7 +879,7 @@ Processing complete, no problems detected.</code></pre>
 
 <p>Ejemplo: nos interesa evaluar cómo varía <span class="math inline">\(\lambda\)</span> en función del FWI.</p>
 <p><br></p>
-<p>Cada muestra <span class="math inline">\(s\)</span> de la posterior (<span class="math inline">\(\{\alpha_s, \beta_s\}\)</span>) define una función <span class="math display">\[\lambda_s = f_s(\text{FWI}) = \exp(\alpha_s + \beta_s \ \text{FWI})\]</span>.</p>
+<p>Cada muestra <span class="math inline">\(s\)</span> de la posterior (<span class="math inline">\(\{\alpha_s, \beta_s\}\)</span>) define una función <span class="math display">\[\lambda_s = f_s(\text{FWI}) = \exp(\alpha_s + \beta_s \ \text{FWI}).\]</span></p>
 <p><br></p>
 <p>Si nos interesa describir esa función considerando la incertidumbre en la estimación, podemos evaluarla sobre una secuencia de <span class="math inline">\(\text{FWI}\)</span> utilizando todas o algunas muestras de la posterior.</p>
 <p><br></p>
@@ -947,7 +948,7 @@ Processing complete, no problems detected.</code></pre>
 <span id="cb35-22"><a href=""></a> </span>
 <span id="cb35-23"><a href=""></a><span class="co"># Ahora graficamos la predicción media y su incertidumbre</span></span>
 <span id="cb35-24"><a href=""></a><span class="fu">ggplot</span>(pred, <span class="fu">aes</span>(fwi, lambda_mean, <span class="at">ymin =</span> lambda_lwr, <span class="at">ymax =</span> lambda_upr)) <span class="sc">+</span></span>
-<span id="cb35-25"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">color =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb35-25"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
 <span id="cb35-26"><a href=""></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
 <span id="cb35-27"><a href=""></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"FWI"</span>, <span class="at">y =</span> <span class="fu">expression</span>(lambda)) <span class="sc">+</span></span>
 <span id="cb35-28"><a href=""></a>  <span class="co"># Agregamos los datos</span></span>
@@ -983,9 +984,9 @@ Processing complete, no problems detected.</code></pre>
 <span id="cb36-18"><a href=""></a><span class="fu">ggplot</span>(pred, <span class="fu">aes</span>(fwi, lambda_mean, <span class="at">ymin =</span> lambda_lwr, <span class="at">ymax =</span> lambda_upr)) <span class="sc">+</span></span>
 <span id="cb36-19"><a href=""></a>  <span class="co"># Intervalo para y</span></span>
 <span id="cb36-20"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(fwi, <span class="at">ymin =</span> y_lwr, <span class="at">ymax =</span> y_upr), <span class="at">inherit.aes =</span> F, </span>
-<span id="cb36-21"><a href=""></a>              <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb36-21"><a href=""></a>              <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">fill =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
 <span id="cb36-22"><a href=""></a>  <span class="co"># Intervalo para lambda</span></span>
-<span id="cb36-23"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">color =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb36-23"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
 <span id="cb36-24"><a href=""></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
 <span id="cb36-25"><a href=""></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"FWI"</span>, <span class="at">y =</span> <span class="fu">expression</span>(lambda)) <span class="sc">+</span></span>
 <span id="cb36-26"><a href=""></a>  <span class="co"># Agregamos los datos</span></span>
@@ -1011,24 +1012,88 @@ Processing complete, no problems detected.</code></pre>
 </section>
 <section class="slide level2">
 
-<h3 id="ejemplo-con-más-predictoras">Ejemplo con más predictoras</h3>
+<h3 id="r2-bayesiano-gelman-et-al.-2019"><span class="math inline">\(R^2\)</span> bayesiano (Gelman et al.&nbsp;2019)</h3>
+<p><br></p>
+<p>El coeficiente de determinación bayesiano se define así:</p>
+<p><span class="math display">\[
+R^2 = \frac{\text{varianza de los predichos}}{\text{varianza de los predichos} + \text{varianza residual}},
+\]</span></p>
+<p>donde los predichos son la esperanza (media) predicha para cada observación. La varianza de los predichos se toma a lo largo de las observaciones (<span class="math inline">\(N\)</span> predichos). La varianza residual es la varianza <em>estimada</em> para cada observación. La varianza residual se promedia entre las <span class="math inline">\(N\)</span> observaciones.</p>
+<p>Representa la proporción de la variabilidad en la distribución estimada de los datos que es explicada por el modelo.</p>
+</section>
+<section class="slide level2">
+
+<h3 id="r2-a-partir-de-muestras-de-la-posterior"><span class="math inline">\(R^2\)</span> a partir de muestras de la posterior</h3>
+<p><br></p>
+<p>Con una estimación bayesiana basada en muestras de la posterior <span class="math inline">\(s \in \{1, \dots, S\}\)</span>, el <span class="math inline">\(R^2\)</span> se puede calcular para cada muestra:</p>
+<p><span class="math display">\[
+R_s^2 = \frac{\mathrm{Var}(\boldsymbol{\mu_s})}{\mathrm{Var}(\boldsymbol{\mu_s}) + \frac{1}{N} \sum(\boldsymbol{\tau}_s)},
+\]</span></p>
+<p>donde <span class="math inline">\(\boldsymbol{\mu}_s\)</span> es el vector de largo <span class="math inline">\(N\)</span> con la esperanza estimada para cada observación, calculada con el vector de parámetros <span class="math inline">\(\boldsymbol{\theta}_s\)</span>. <span class="math inline">\(\boldsymbol{\tau}_s\)</span> es el vector de varianzas estimadas para cada observación, también basado en <span class="math inline">\(\boldsymbol{\theta}_s\)</span>. En el caso de un modelo normal, sería un vector de <span class="math inline">\(\sigma^2\)</span>. (Nótese que en la mayor parte de las distribuciones la varianza varía con la media, por lo que suele variar entre observaciones.)</p>
+<p>Estimando <span class="math inline">\(R_s^2\)</span> para cada <span class="math inline">\(s\)</span>, obtenemos su distribución posterior.</p>
+</section>
+<section class="slide level2">
+
+<p>Importante: dado que el <span class="math inline">\(R^2\)</span> bayesiano está basado en la varianza y media estimadas, para que sea confiable, el modelo debe representar los datos de forma adecuada. Por ejemplo, un modelo que subestima la variabilidad en los datos va a sobreestimar el <span class="math inline">\(R^2\)</span>. Por eso es importante verificar el modelo con residuos DHARMa y hacer lo posible por que cuantifique de forma razonable la variabilidad.</p>
+</section>
+<section class="slide level2">
+
+<p><span class="math inline">\(R^2\)</span> para el modelo de incendios.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href=""></a><span class="co"># Vector para almacenar el R2</span></span>
+<span id="cb38-2"><a href=""></a>R2 <span class="ot">&lt;-</span> <span class="fu">numeric</span>(S)</span>
+<span id="cb38-3"><a href=""></a></span>
+<span id="cb38-4"><a href=""></a><span class="co"># Loop sobre muestras de la posterior</span></span>
+<span id="cb38-5"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb38-6"><a href=""></a>  <span class="co"># predichos para cada observación</span></span>
+<span id="cb38-7"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">exp</span>(d<span class="sc">$</span>a[i] <span class="sc">+</span> d<span class="sc">$</span>b[i] <span class="sc">*</span> datos<span class="sc">$</span>fwi) <span class="co"># es lambda!</span></span>
+<span id="cb38-8"><a href=""></a>  </span>
+<span id="cb38-9"><a href=""></a>  <span class="co"># varianza de los predichos = varianza explicada</span></span>
+<span id="cb38-10"><a href=""></a>  var_fit <span class="ot">&lt;-</span> <span class="fu">var</span>(mu)</span>
+<span id="cb38-11"><a href=""></a>  </span>
+<span id="cb38-12"><a href=""></a>  <span class="co"># varianza residual para cada observación. Esto depende de la </span></span>
+<span id="cb38-13"><a href=""></a>  <span class="co"># distribución. En la poisson, la varianza es igual al media</span></span>
+<span id="cb38-14"><a href=""></a>  var_res <span class="ot">&lt;-</span> mu <span class="co"># sólo para ser explícitos</span></span>
+<span id="cb38-15"><a href=""></a>  <span class="co"># y tomamos su media entre observaciones</span></span>
+<span id="cb38-16"><a href=""></a>  var_res_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(var_res)</span>
+<span id="cb38-17"><a href=""></a>  </span>
+<span id="cb38-18"><a href=""></a>  <span class="co"># R2 </span></span>
+<span id="cb38-19"><a href=""></a>  R2[i] <span class="ot">&lt;-</span> var_fit <span class="sc">/</span> (var_fit <span class="sc">+</span> var_res_mean)</span>
+<span id="cb38-20"><a href=""></a>}</span>
+<span id="cb38-21"><a href=""></a></span>
+<span id="cb38-22"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(R2, <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">1</span>), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlab =</span> <span class="st">"R2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-12-1.png" width="480" class="r-stretch"><p>El <span class="math inline">\(R^2\)</span> da alto, pero hay que considerar que el modelo subestima la variabilidad en los datos (variabilidad no explicada). Si modeláramos con una binomial negativa, que admite más variabilidad que una poisson, el <span class="math inline">\(R^2\)</span> sería notablemente más bajo.</p>
+</section>
+<section class="slide level2">
+
+<p>Formulación del <span class="math inline">\(R^2\)</span> bayesiano:</p>
+<p>Gelman, A., Goodrich, B., Gabry, J., &amp; Vehtari, A. (2019). R-squared for Bayesian regression models. The American Statistician.</p>
+</section>
+<section class="slide level2">
+
+<h3 id="modelo-de-germinación-más-de-una-predictora">Modelo de germinación (más de una predictora)</h3>
 <p>[Datos de Alinari et al.&nbsp;2023]</p>
 <p><span class="math display">\[
-\begin{align}
+\begin{aligned}
 y_i &amp;\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 \mu_i &amp;= \frac{1}{1 + \exp(-\eta_i)} \\
 \eta_i &amp;= \alpha + \beta_D \ D_i + \beta_E \ E_i + \beta_H \ H_i\\
 \\
 \alpha &amp;\sim \text{normal}(0, 10) \\
 \beta_. &amp;\sim \text{normal}(0, 5) \\
-\phi &amp;\sim \text{log-normal}(\log(10), 2) \\
+\phi &amp;\sim \text{log-normal}(\log(7), 1.5) \\
 \\
 \text{y: } &amp;\text{Número de semillas germinadas} \\
 \text{N: } &amp;\text{Número de semillas sembradas} \\
 \text{D: } &amp;\text{Daño por fuego} \\
 \text{E: } &amp;\text{Altidud} \\
 \text{H: } &amp;\text{Altura inicial del árbol} \\
-\end{align}
+\end{aligned}
 \]</span></p>
 </section>
 <section class="slide level2">
@@ -1037,45 +1102,45 @@ y_i &amp;\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href=""></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>()) <span class="co"># Limpiamos el entorno</span></span>
-<span id="cb38-2"><a href=""></a></span>
-<span id="cb38-3"><a href=""></a><span class="co"># Cargamos datos</span></span>
-<span id="cb38-4"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"datos"</span>, <span class="st">"alinari_data_espinillo.csv"</span>))</span>
-<span id="cb38-5"><a href=""></a></span>
-<span id="cb38-6"><a href=""></a><span class="co"># Conservamos los que tienen datos de germinación</span></span>
-<span id="cb38-7"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">subset</span>(datos, <span class="sc">!</span><span class="fu">is.na</span>(germinadas) <span class="sc">&amp;</span> sembradas <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb38-8"><a href=""></a></span>
-<span id="cb38-9"><a href=""></a><span class="co"># Estandarizamos las predictoras para tener efectos comparables y para </span></span>
-<span id="cb38-10"><a href=""></a><span class="co"># facilitar la interpretación de las previas</span></span>
-<span id="cb38-11"><a href=""></a>D_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>danio)</span>
-<span id="cb38-12"><a href=""></a>D_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>danio)</span>
-<span id="cb38-13"><a href=""></a></span>
-<span id="cb38-14"><a href=""></a>E_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>altitud)</span>
-<span id="cb38-15"><a href=""></a>E_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>altitud)</span>
-<span id="cb38-16"><a href=""></a></span>
-<span id="cb38-17"><a href=""></a>H_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>altura)</span>
-<span id="cb38-18"><a href=""></a>H_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>altura)</span>
-<span id="cb38-19"><a href=""></a></span>
-<span id="cb38-20"><a href=""></a>datos<span class="sc">$</span>D <span class="ot">&lt;-</span> (datos<span class="sc">$</span>danio <span class="sc">-</span> D_mean) <span class="sc">/</span> D_sd</span>
-<span id="cb38-21"><a href=""></a>datos<span class="sc">$</span>E <span class="ot">&lt;-</span> (datos<span class="sc">$</span>altitud <span class="sc">-</span> E_mean) <span class="sc">/</span> E_sd</span>
-<span id="cb38-22"><a href=""></a>datos<span class="sc">$</span>H <span class="ot">&lt;-</span> (datos<span class="sc">$</span>altura <span class="sc">-</span> H_mean) <span class="sc">/</span> H_sd</span>
-<span id="cb38-23"><a href=""></a></span>
-<span id="cb38-24"><a href=""></a><span class="co"># Datos para Stan</span></span>
-<span id="cb38-25"><a href=""></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb38-26"><a href=""></a>  <span class="at">N =</span> <span class="fu">nrow</span>(datos),</span>
-<span id="cb38-27"><a href=""></a>  <span class="at">y =</span> datos<span class="sc">$</span>germinadas,</span>
-<span id="cb38-28"><a href=""></a>  <span class="at">S =</span> <span class="dv">120</span>,</span>
-<span id="cb38-29"><a href=""></a>  </span>
-<span id="cb38-30"><a href=""></a>  <span class="at">D =</span> datos<span class="sc">$</span>D,</span>
-<span id="cb38-31"><a href=""></a>  <span class="at">E =</span> datos<span class="sc">$</span>E,</span>
-<span id="cb38-32"><a href=""></a>  <span class="at">H =</span> datos<span class="sc">$</span>H</span>
-<span id="cb38-33"><a href=""></a>)</span>
-<span id="cb38-34"><a href=""></a></span>
-<span id="cb38-35"><a href=""></a><span class="co"># Compilamos modelo</span></span>
-<span id="cb38-36"><a href=""></a>model <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"modelos"</span>, <span class="st">"germinadas.stan"</span>))</span>
-<span id="cb38-37"><a href=""></a></span>
-<span id="cb38-38"><a href=""></a><span class="co"># Muestreamos</span></span>
-<span id="cb38-39"><a href=""></a>fit <span class="ot">&lt;-</span> model<span class="sc">$</span><span class="fu">sample</span>(<span class="at">data =</span> stan_data, <span class="at">parallel_chains =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href=""></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>()) <span class="co"># Limpiamos el entorno</span></span>
+<span id="cb39-2"><a href=""></a></span>
+<span id="cb39-3"><a href=""></a><span class="co"># Cargamos datos</span></span>
+<span id="cb39-4"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"datos"</span>, <span class="st">"alinari_data_espinillo.csv"</span>))</span>
+<span id="cb39-5"><a href=""></a></span>
+<span id="cb39-6"><a href=""></a><span class="co"># Conservamos los que tienen datos de germinación</span></span>
+<span id="cb39-7"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">subset</span>(datos, <span class="sc">!</span><span class="fu">is.na</span>(germinadas) <span class="sc">&amp;</span> sembradas <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb39-8"><a href=""></a></span>
+<span id="cb39-9"><a href=""></a><span class="co"># Estandarizamos las predictoras para tener efectos comparables y para </span></span>
+<span id="cb39-10"><a href=""></a><span class="co"># facilitar la interpretación de las previas</span></span>
+<span id="cb39-11"><a href=""></a>D_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>danio)</span>
+<span id="cb39-12"><a href=""></a>D_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>danio)</span>
+<span id="cb39-13"><a href=""></a></span>
+<span id="cb39-14"><a href=""></a>E_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>altitud)</span>
+<span id="cb39-15"><a href=""></a>E_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>altitud)</span>
+<span id="cb39-16"><a href=""></a></span>
+<span id="cb39-17"><a href=""></a>H_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(datos<span class="sc">$</span>altura)</span>
+<span id="cb39-18"><a href=""></a>H_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(datos<span class="sc">$</span>altura)</span>
+<span id="cb39-19"><a href=""></a></span>
+<span id="cb39-20"><a href=""></a>datos<span class="sc">$</span>D <span class="ot">&lt;-</span> (datos<span class="sc">$</span>danio <span class="sc">-</span> D_mean) <span class="sc">/</span> D_sd</span>
+<span id="cb39-21"><a href=""></a>datos<span class="sc">$</span>E <span class="ot">&lt;-</span> (datos<span class="sc">$</span>altitud <span class="sc">-</span> E_mean) <span class="sc">/</span> E_sd</span>
+<span id="cb39-22"><a href=""></a>datos<span class="sc">$</span>H <span class="ot">&lt;-</span> (datos<span class="sc">$</span>altura <span class="sc">-</span> H_mean) <span class="sc">/</span> H_sd</span>
+<span id="cb39-23"><a href=""></a></span>
+<span id="cb39-24"><a href=""></a><span class="co"># Datos para Stan</span></span>
+<span id="cb39-25"><a href=""></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb39-26"><a href=""></a>  <span class="at">N =</span> <span class="fu">nrow</span>(datos),</span>
+<span id="cb39-27"><a href=""></a>  <span class="at">y =</span> datos<span class="sc">$</span>germinadas,</span>
+<span id="cb39-28"><a href=""></a>  <span class="at">S =</span> <span class="dv">120</span>,</span>
+<span id="cb39-29"><a href=""></a>  </span>
+<span id="cb39-30"><a href=""></a>  <span class="at">D =</span> datos<span class="sc">$</span>D,</span>
+<span id="cb39-31"><a href=""></a>  <span class="at">E =</span> datos<span class="sc">$</span>E,</span>
+<span id="cb39-32"><a href=""></a>  <span class="at">H =</span> datos<span class="sc">$</span>H</span>
+<span id="cb39-33"><a href=""></a>)</span>
+<span id="cb39-34"><a href=""></a></span>
+<span id="cb39-35"><a href=""></a><span class="co"># Compilamos modelo</span></span>
+<span id="cb39-36"><a href=""></a>model <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"modelos"</span>, <span class="st">"germinadas.stan"</span>))</span>
+<span id="cb39-37"><a href=""></a></span>
+<span id="cb39-38"><a href=""></a><span class="co"># Muestreamos</span></span>
+<span id="cb39-39"><a href=""></a>fit <span class="ot">&lt;-</span> model<span class="sc">$</span><span class="fu">sample</span>(<span class="at">data =</span> stan_data, <span class="at">parallel_chains =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 4 parallel chains...
@@ -1142,7 +1207,6 @@ Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling)
 Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
 Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
 Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
-Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
 Chain 4 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
 Chain 4 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
 Chain 4 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
@@ -1152,24 +1216,25 @@ Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
 Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
 Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
-Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
 Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
 Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
-Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
 Chain 4 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
 Chain 4 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
 Chain 4 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
 Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
 Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
 Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
 Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
 Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
 Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
 Chain 4 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
 Chain 4 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
 Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
 Chain 1 finished in 0.4 seconds.
-Chain 2 finished in 0.4 seconds.
+Chain 2 finished in 0.5 seconds.
 Chain 3 finished in 0.4 seconds.
 Chain 4 finished in 0.4 seconds.
 
@@ -1179,8 +1244,8 @@ Total execution time: 0.5 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href=""></a><span class="co"># Chequeamos MCMC</span></span>
-<span id="cb40-2"><a href=""></a>fit<span class="sc">$</span><span class="fu">cmdstan_diagnose</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href=""></a><span class="co"># Chequeamos MCMC</span></span>
+<span id="cb41-2"><a href=""></a>fit<span class="sc">$</span><span class="fu">cmdstan_diagnose</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Checking sampler transitions treedepth.
@@ -1206,111 +1271,98 @@ Processing complete, no problems detected.</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href=""></a><span class="co"># Extraemos muestras de los parámetros que necesitamos</span></span>
-<span id="cb42-2"><a href=""></a>d <span class="ot">&lt;-</span> fit<span class="sc">$</span><span class="fu">draws</span>(</span>
-<span id="cb42-3"><a href=""></a>  <span class="fu">c</span>(<span class="st">"alpha"</span>, <span class="st">"beta_D"</span>, <span class="st">"beta_E"</span>, <span class="st">"beta_H"</span>, <span class="st">"phi"</span>), <span class="at">format =</span> <span class="st">"draws_df"</span></span>
-<span id="cb42-4"><a href=""></a>)</span>
-<span id="cb42-5"><a href=""></a><span class="fu">colnames</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"bD"</span>, <span class="st">"bE"</span>, <span class="st">"bH"</span>, <span class="st">"phi"</span>)</span>
-<span id="cb42-6"><a href=""></a>S <span class="ot">&lt;-</span> <span class="fu">nrow</span>(d)</span>
-<span id="cb42-7"><a href=""></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(datos)</span>
-<span id="cb42-8"><a href=""></a></span>
-<span id="cb42-9"><a href=""></a><span class="co"># Verificamos el ajuste simulando de la predictiva posterior. Para simular de </span></span>
-<span id="cb42-10"><a href=""></a><span class="co"># la beta-binomial en R usaremos el paquete extraDistr, que incluye la función</span></span>
-<span id="cb42-11"><a href=""></a><span class="co"># rbbinom</span></span>
-<span id="cb42-12"><a href=""></a>ysim <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, N, S)</span>
-<span id="cb42-13"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
-<span id="cb42-14"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">plogis</span>( <span class="co"># equivale a inv_logit = logit inverso</span></span>
-<span id="cb42-15"><a href=""></a>    d<span class="sc">$</span>a[i] <span class="sc">+</span> </span>
-<span id="cb42-16"><a href=""></a>    d<span class="sc">$</span>bD[i] <span class="sc">*</span> datos<span class="sc">$</span>D <span class="sc">+</span> d<span class="sc">$</span>bE[i] <span class="sc">*</span> datos<span class="sc">$</span>E <span class="sc">+</span> d<span class="sc">$</span>bH[i] <span class="sc">*</span> datos<span class="sc">$</span>H </span>
-<span id="cb42-17"><a href=""></a>  )</span>
-<span id="cb42-18"><a href=""></a>  a <span class="ot">&lt;-</span> mu <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
-<span id="cb42-19"><a href=""></a>  b <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
-<span id="cb42-20"><a href=""></a>  ysim[, i] <span class="ot">&lt;-</span> <span class="fu">rbbinom</span>(N, datos<span class="sc">$</span>sembradas, a, b)</span>
-<span id="cb42-21"><a href=""></a>} </span>
-<span id="cb42-22"><a href=""></a></span>
-<span id="cb42-23"><a href=""></a>ysim_t <span class="ot">&lt;-</span> <span class="fu">t</span>(ysim)</span>
-<span id="cb42-24"><a href=""></a></span>
-<span id="cb42-25"><a href=""></a><span class="co"># Miramos con bayesplot</span></span>
-<span id="cb42-26"><a href=""></a><span class="fu">ppc_intervals</span>(</span>
-<span id="cb42-27"><a href=""></a>  datos<span class="sc">$</span>germinadas, <span class="at">yrep =</span> ysim_t, <span class="at">x =</span> datos<span class="sc">$</span>danio,</span>
-<span id="cb42-28"><a href=""></a>  <span class="at">prob =</span> <span class="fl">0.5</span>, <span class="at">prob_outer =</span> <span class="fl">0.9</span></span>
-<span id="cb42-29"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href=""></a><span class="co"># Extraemos muestras de los parámetros que necesitamos</span></span>
+<span id="cb43-2"><a href=""></a>d <span class="ot">&lt;-</span> fit<span class="sc">$</span><span class="fu">draws</span>(</span>
+<span id="cb43-3"><a href=""></a>  <span class="fu">c</span>(<span class="st">"alpha"</span>, <span class="st">"beta_D"</span>, <span class="st">"beta_E"</span>, <span class="st">"beta_H"</span>, <span class="st">"phi"</span>), <span class="at">format =</span> <span class="st">"draws_df"</span></span>
+<span id="cb43-4"><a href=""></a>)</span>
+<span id="cb43-5"><a href=""></a><span class="fu">colnames</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"bD"</span>, <span class="st">"bE"</span>, <span class="st">"bH"</span>, <span class="st">"phi"</span>)</span>
+<span id="cb43-6"><a href=""></a>S <span class="ot">&lt;-</span> <span class="fu">nrow</span>(d)</span>
+<span id="cb43-7"><a href=""></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(datos)</span>
+<span id="cb43-8"><a href=""></a></span>
+<span id="cb43-9"><a href=""></a><span class="co"># Verificamos el ajuste simulando de la predictiva posterior. Para simular de </span></span>
+<span id="cb43-10"><a href=""></a><span class="co"># la beta-binomial en R usaremos el paquete extraDistr, que incluye la función</span></span>
+<span id="cb43-11"><a href=""></a><span class="co"># rbbinom</span></span>
+<span id="cb43-12"><a href=""></a>ysim <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, N, S)</span>
+<span id="cb43-13"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb43-14"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">plogis</span>( <span class="co"># equivale a inv_logit = logit inverso</span></span>
+<span id="cb43-15"><a href=""></a>    d<span class="sc">$</span>a[i] <span class="sc">+</span> </span>
+<span id="cb43-16"><a href=""></a>    d<span class="sc">$</span>bD[i] <span class="sc">*</span> datos<span class="sc">$</span>D <span class="sc">+</span> d<span class="sc">$</span>bE[i] <span class="sc">*</span> datos<span class="sc">$</span>E <span class="sc">+</span> d<span class="sc">$</span>bH[i] <span class="sc">*</span> datos<span class="sc">$</span>H </span>
+<span id="cb43-17"><a href=""></a>  )</span>
+<span id="cb43-18"><a href=""></a>  a <span class="ot">&lt;-</span> mu <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
+<span id="cb43-19"><a href=""></a>  b <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
+<span id="cb43-20"><a href=""></a>  ysim[, i] <span class="ot">&lt;-</span> <span class="fu">rbbinom</span>(N, datos<span class="sc">$</span>sembradas, a, b)</span>
+<span id="cb43-21"><a href=""></a>} </span>
+<span id="cb43-22"><a href=""></a></span>
+<span id="cb43-23"><a href=""></a>ysim_t <span class="ot">&lt;-</span> <span class="fu">t</span>(ysim)</span>
+<span id="cb43-24"><a href=""></a></span>
+<span id="cb43-25"><a href=""></a><span class="co"># Miramos con bayesplot</span></span>
+<span id="cb43-26"><a href=""></a><span class="fu">ppc_intervals</span>(</span>
+<span id="cb43-27"><a href=""></a>  datos<span class="sc">$</span>germinadas, <span class="at">yrep =</span> ysim_t, <span class="at">x =</span> datos<span class="sc">$</span>danio,</span>
+<span id="cb43-28"><a href=""></a>  <span class="at">prob =</span> <span class="fl">0.5</span>, <span class="at">prob_outer =</span> <span class="fl">0.9</span></span>
+<span id="cb43-29"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-1.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-1.png" width="480"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href=""></a>use <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>S, <span class="dv">100</span>)</span>
-<span id="cb43-2"><a href=""></a><span class="fu">ppc_dens_overlay</span>(datos<span class="sc">$</span>germinadas, <span class="at">yrep =</span> ysim_t[use, ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href=""></a>use <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>S, <span class="dv">100</span>)</span>
+<span id="cb44-2"><a href=""></a><span class="fu">ppc_dens_overlay</span>(datos<span class="sc">$</span>germinadas, <span class="at">yrep =</span> ysim_t[use, ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-2.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-2.png" width="480"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href=""></a><span class="co"># DHARMa</span></span>
-<span id="cb44-2"><a href=""></a>res <span class="ot">&lt;-</span> <span class="fu">createDHARMa</span>(ysim, datos<span class="sc">$</span>germinadas, <span class="at">integerResponse =</span> T)</span>
-<span id="cb44-3"><a href=""></a><span class="fu">plot</span>(res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href=""></a><span class="co"># DHARMa</span></span>
+<span id="cb45-2"><a href=""></a>res <span class="ot">&lt;-</span> <span class="fu">createDHARMa</span>(ysim, datos<span class="sc">$</span>germinadas, <span class="at">integerResponse =</span> T)</span>
+<span id="cb45-3"><a href=""></a><span class="fu">plot</span>(res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-3.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-3.png" width="480"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>danio, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>danio, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-4.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-4.png" width="480"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>altitud, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>altitud, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-5.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-5.png" width="480"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>altura, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href=""></a><span class="fu">plotResiduals</span>(res, <span class="at">form =</span> datos<span class="sc">$</span>altura, <span class="at">rank =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-6.png" width="480"></p>
-</figure>
-</div>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href=""></a><span class="co"># Comparamos previa vs posterior de phi</span></span>
-<span id="cb48-2"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(d<span class="sc">$</span>phi, <span class="at">from =</span> <span class="dv">0</span>), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlab =</span> <span class="fu">expression</span>(phi))</span>
-<span id="cb48-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, <span class="fu">log</span>(<span class="dv">7</span>), <span class="fl">1.5</span>), <span class="at">add =</span> T, <span class="at">col =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-13-7.png" width="480"></p>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-6.png" width="480"></p>
 </figure>
 </div>
 </div>
@@ -1318,92 +1370,670 @@ Processing complete, no problems detected.</code></pre>
 </section>
 <section class="slide level2">
 
+<p>Comparamos posterior vs.&nbsp;previa de <span class="math inline">\(\phi\)</span></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href=""></a><span class="co"># phi</span></span>
+<span id="cb49-2"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(d<span class="sc">$</span>phi, <span class="at">from =</span> <span class="dv">0</span>), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlab =</span> <span class="fu">expression</span>(phi))</span>
+<span id="cb49-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, <span class="fu">log</span>(<span class="dv">7</span>), <span class="fl">1.5</span>), <span class="at">add =</span> T, <span class="at">col =</span> <span class="dv">4</span>) <span class="co"># previa definida en Stan</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-15-1.png" width="480" class="r-stretch"></section>
+<section class="slide level2">
+
+<p><span class="math inline">\(R^2\)</span></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href=""></a><span class="co"># Vector para almacenar el R2</span></span>
+<span id="cb50-2"><a href=""></a>R2 <span class="ot">&lt;-</span> <span class="fu">numeric</span>(S)</span>
+<span id="cb50-3"><a href=""></a></span>
+<span id="cb50-4"><a href=""></a><span class="co"># Por comodidad, definimos las sembradas</span></span>
+<span id="cb50-5"><a href=""></a>SS <span class="ot">&lt;-</span> datos<span class="sc">$</span>sembradas[<span class="dv">1</span>]</span>
+<span id="cb50-6"><a href=""></a></span>
+<span id="cb50-7"><a href=""></a><span class="co"># Loop sobre muestras de la posterior</span></span>
+<span id="cb50-8"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb50-9"><a href=""></a>  <span class="co"># En la beta-binomial, la media es mu * size,</span></span>
+<span id="cb50-10"><a href=""></a>  <span class="co"># siendo size la cantidad de sembradas</span></span>
+<span id="cb50-11"><a href=""></a>  </span>
+<span id="cb50-12"><a href=""></a>  <span class="co"># predichos para cada observación</span></span>
+<span id="cb50-13"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">plogis</span>( <span class="co"># equivale a inv_logit = logit inverso</span></span>
+<span id="cb50-14"><a href=""></a>    d<span class="sc">$</span>a[i] <span class="sc">+</span> </span>
+<span id="cb50-15"><a href=""></a>    d<span class="sc">$</span>bD[i] <span class="sc">*</span> datos<span class="sc">$</span>D <span class="sc">+</span> d<span class="sc">$</span>bE[i] <span class="sc">*</span> datos<span class="sc">$</span>E <span class="sc">+</span> d<span class="sc">$</span>bH[i] <span class="sc">*</span> datos<span class="sc">$</span>H </span>
+<span id="cb50-16"><a href=""></a>  )</span>
+<span id="cb50-17"><a href=""></a>  media <span class="ot">&lt;-</span> mu <span class="sc">*</span> SS <span class="co"># 120 sembradas</span></span>
+<span id="cb50-18"><a href=""></a>  </span>
+<span id="cb50-19"><a href=""></a>  <span class="co"># varianza de los predichos = varianza explicada</span></span>
+<span id="cb50-20"><a href=""></a>  var_fit <span class="ot">&lt;-</span> <span class="fu">var</span>(media)</span>
+<span id="cb50-21"><a href=""></a>  </span>
+<span id="cb50-22"><a href=""></a>  <span class="co"># varianza residual para cada observación. En la beta-binomial, la </span></span>
+<span id="cb50-23"><a href=""></a>  <span class="co"># varianza se define así:</span></span>
+<span id="cb50-24"><a href=""></a>  var_res <span class="ot">&lt;-</span> SS <span class="sc">*</span> mu <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> ((N <span class="sc">+</span> d<span class="sc">$</span>phi[i]) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> d<span class="sc">$</span>phi[i]))</span>
+<span id="cb50-25"><a href=""></a>  </span>
+<span id="cb50-26"><a href=""></a>  <span class="co"># y tomamos su media entre observaciones</span></span>
+<span id="cb50-27"><a href=""></a>  var_res_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(var_res)</span>
+<span id="cb50-28"><a href=""></a>  </span>
+<span id="cb50-29"><a href=""></a>  <span class="co"># R2 </span></span>
+<span id="cb50-30"><a href=""></a>  R2[i] <span class="ot">&lt;-</span> var_fit <span class="sc">/</span> (var_fit <span class="sc">+</span> var_res_mean)</span>
+<span id="cb50-31"><a href=""></a>}</span>
+<span id="cb50-32"><a href=""></a></span>
+<span id="cb50-33"><a href=""></a><span class="fu">plot</span>(<span class="fu">density</span>(R2, <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">1</span>), <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">xlab =</span> <span class="st">"R2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-16-1.png" width="480" class="r-stretch"></section>
+<section class="slide level2">
+
 <p>Visualizamos resultados de interés: predicciones parciales</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href=""></a><span class="co"># Predicción parcial para visualizar el efecto del daño por fuego (D).</span></span>
-<span id="cb49-2"><a href=""></a></span>
-<span id="cb49-3"><a href=""></a><span class="co"># Graficaremos curvas basadas en nrep valores de daño en el rango observado</span></span>
-<span id="cb49-4"><a href=""></a>nrep <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb49-5"><a href=""></a>danio_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(datos<span class="sc">$</span>danio), <span class="fu">max</span>(datos<span class="sc">$</span>danio), <span class="at">length.out =</span> nrep)</span>
-<span id="cb49-6"><a href=""></a><span class="co"># Estandarizamos la secuencia, porque los parámetros viven en escala estandarizada.</span></span>
-<span id="cb49-7"><a href=""></a>D_seq <span class="ot">&lt;-</span> (danio_seq <span class="sc">-</span> D_mean) <span class="sc">/</span> D_sd</span>
-<span id="cb49-8"><a href=""></a></span>
-<span id="cb49-9"><a href=""></a><span class="co"># Creamos data.frame de predicciones con las predictoras. Las predictoras no </span></span>
-<span id="cb49-10"><a href=""></a><span class="co"># focales se fijan en su media (0 porque están estandarizadas), por eso es una </span></span>
-<span id="cb49-11"><a href=""></a><span class="co"># predicción parcial.</span></span>
-<span id="cb49-12"><a href=""></a>pred <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb49-13"><a href=""></a>  <span class="at">D =</span> D_seq, </span>
-<span id="cb49-14"><a href=""></a>  <span class="at">E =</span> <span class="dv">0</span>,</span>
-<span id="cb49-15"><a href=""></a>  <span class="at">H =</span> <span class="dv">0</span></span>
-<span id="cb49-16"><a href=""></a>)</span>
-<span id="cb49-17"><a href=""></a>pred<span class="sc">$</span>danio <span class="ot">&lt;-</span> danio_seq <span class="co"># la agregamos en la escala original, para visualizar</span></span>
-<span id="cb49-18"><a href=""></a></span>
-<span id="cb49-19"><a href=""></a><span class="co"># Matriz para llenar con predicciones de mu</span></span>
-<span id="cb49-20"><a href=""></a>mu_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, nrep, S)</span>
-<span id="cb49-21"><a href=""></a></span>
-<span id="cb49-22"><a href=""></a><span class="co"># Y matriz para llenar con valores simulados de semillas germinadas</span></span>
-<span id="cb49-23"><a href=""></a>y_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, nrep, S) <span class="co"># se parece a ysim, pero tiene nrep filas, no N.</span></span>
-<span id="cb49-24"><a href=""></a></span>
-<span id="cb49-25"><a href=""></a><span class="co"># Las llenamos</span></span>
-<span id="cb49-26"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
-<span id="cb49-27"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">plogis</span>( <span class="co"># equivale a inv_logit = logit inverso</span></span>
-<span id="cb49-28"><a href=""></a>    d<span class="sc">$</span>a[i] <span class="sc">+</span> </span>
-<span id="cb49-29"><a href=""></a>    d<span class="sc">$</span>bD[i] <span class="sc">*</span> pred<span class="sc">$</span>D <span class="sc">+</span> d<span class="sc">$</span>bE[i] <span class="sc">*</span> pred<span class="sc">$</span>E <span class="sc">+</span> d<span class="sc">$</span>bH[i] <span class="sc">*</span> pred<span class="sc">$</span>H </span>
-<span id="cb49-30"><a href=""></a>    <span class="co"># los dos últimos términos pueden obviarse, pero los dejamos para </span></span>
-<span id="cb49-31"><a href=""></a>    <span class="co"># explicitar.</span></span>
-<span id="cb49-32"><a href=""></a>  )</span>
-<span id="cb49-33"><a href=""></a>  mu_mat[, i] <span class="ot">&lt;-</span> mu</span>
-<span id="cb49-34"><a href=""></a>  </span>
-<span id="cb49-35"><a href=""></a>  <span class="co"># calculamos alpha y beta para simular</span></span>
-<span id="cb49-36"><a href=""></a>  a <span class="ot">&lt;-</span> mu <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
-<span id="cb49-37"><a href=""></a>  b <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
-<span id="cb49-38"><a href=""></a>  y_mat[, i] <span class="ot">&lt;-</span> <span class="fu">rbbinom</span>(nrep, datos<span class="sc">$</span>sembradas[<span class="dv">1</span>], a, b)</span>
-<span id="cb49-39"><a href=""></a>} </span>
-<span id="cb49-40"><a href=""></a></span>
-<span id="cb49-41"><a href=""></a><span class="co"># Resumimos la distribución posterior de mu fila por fila</span></span>
-<span id="cb49-42"><a href=""></a>pred<span class="sc">$</span>mu_mean <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(mu_mat)</span>
-<span id="cb49-43"><a href=""></a>pred<span class="sc">$</span>mu_lwr <span class="ot">&lt;-</span> <span class="fu">apply</span>(mu_mat, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.025</span>)</span>
-<span id="cb49-44"><a href=""></a>pred<span class="sc">$</span>mu_upr <span class="ot">&lt;-</span> <span class="fu">apply</span>(mu_mat, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
-<span id="cb49-45"><a href=""></a></span>
-<span id="cb49-46"><a href=""></a><span class="co"># Convertimos la distribución de y en proporciones, para que esté en la misma</span></span>
-<span id="cb49-47"><a href=""></a><span class="co"># escala que mu</span></span>
-<span id="cb49-48"><a href=""></a>y_mat_p <span class="ot">&lt;-</span> y_mat <span class="sc">/</span> datos<span class="sc">$</span>sembradas[<span class="dv">1</span>]</span>
-<span id="cb49-49"><a href=""></a></span>
-<span id="cb49-50"><a href=""></a><span class="co"># y resumimos</span></span>
-<span id="cb49-51"><a href=""></a>pred<span class="sc">$</span>y_lwr <span class="ot">&lt;-</span> <span class="fu">apply</span>(y_mat_p, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.025</span>)</span>
-<span id="cb49-52"><a href=""></a>pred<span class="sc">$</span>y_upr <span class="ot">&lt;-</span> <span class="fu">apply</span>(y_mat_p, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
-<span id="cb49-53"><a href=""></a></span>
-<span id="cb49-54"><a href=""></a><span class="co"># Calculamos la proporción observada en los datos</span></span>
-<span id="cb49-55"><a href=""></a>datos<span class="sc">$</span>prop <span class="ot">&lt;-</span> datos<span class="sc">$</span>germinadas <span class="sc">/</span> datos<span class="sc">$</span>sembradas</span>
-<span id="cb49-56"><a href=""></a></span>
-<span id="cb49-57"><a href=""></a><span class="co"># Graficamos </span></span>
-<span id="cb49-58"><a href=""></a><span class="fu">ggplot</span>(pred, <span class="fu">aes</span>(danio, mu, <span class="at">ymin =</span> mu_lwr, <span class="at">ymax =</span> mu_upr)) <span class="sc">+</span></span>
-<span id="cb49-59"><a href=""></a>  <span class="co"># Intervalo de predicción (posterior predictive)</span></span>
-<span id="cb49-60"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(danio, <span class="at">ymin =</span> y_lwr, <span class="at">ymax =</span> y_upr), <span class="at">inherit.aes =</span> F, </span>
-<span id="cb49-61"><a href=""></a>              <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb49-62"><a href=""></a>  <span class="co"># Intervalo para la media</span></span>
-<span id="cb49-63"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">color =</span> <span class="cn">NA</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span> </span>
-<span id="cb49-64"><a href=""></a>  <span class="co"># Media de la media</span></span>
-<span id="cb49-65"><a href=""></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb49-66"><a href=""></a>  <span class="co"># datos</span></span>
-<span id="cb49-67"><a href=""></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(danio, prop), <span class="at">data =</span> datos, <span class="at">inherit.aes =</span> F,</span>
-<span id="cb49-68"><a href=""></a>             <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb49-69"><a href=""></a>  <span class="fu">labs</span>(</span>
-<span id="cb49-70"><a href=""></a>    <span class="at">y =</span> <span class="st">"Proporción de germinación"</span>,</span>
-<span id="cb49-71"><a href=""></a>    <span class="at">x =</span> <span class="st">"Daño (%)"</span></span>
-<span id="cb49-72"><a href=""></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href=""></a><span class="co"># Predicción parcial para visualizar el efecto del daño por fuego (D).</span></span>
+<span id="cb51-2"><a href=""></a></span>
+<span id="cb51-3"><a href=""></a><span class="co"># Graficaremos curvas basadas en nrep valores de daño en el rango observado</span></span>
+<span id="cb51-4"><a href=""></a>nrep <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb51-5"><a href=""></a>danio_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(datos<span class="sc">$</span>danio), <span class="fu">max</span>(datos<span class="sc">$</span>danio), <span class="at">length.out =</span> nrep)</span>
+<span id="cb51-6"><a href=""></a><span class="co"># Estandarizamos la secuencia, porque los parámetros viven en escala estandarizada.</span></span>
+<span id="cb51-7"><a href=""></a>D_seq <span class="ot">&lt;-</span> (danio_seq <span class="sc">-</span> D_mean) <span class="sc">/</span> D_sd</span>
+<span id="cb51-8"><a href=""></a></span>
+<span id="cb51-9"><a href=""></a><span class="co"># Creamos data.frame de predicciones con las predictoras. Las predictoras no </span></span>
+<span id="cb51-10"><a href=""></a><span class="co"># focales se fijan en su media (0 porque están estandarizadas), por eso es una </span></span>
+<span id="cb51-11"><a href=""></a><span class="co"># predicción parcial.</span></span>
+<span id="cb51-12"><a href=""></a>pred <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb51-13"><a href=""></a>  <span class="at">D =</span> D_seq, </span>
+<span id="cb51-14"><a href=""></a>  <span class="at">E =</span> <span class="dv">0</span>,</span>
+<span id="cb51-15"><a href=""></a>  <span class="at">H =</span> <span class="dv">0</span></span>
+<span id="cb51-16"><a href=""></a>)</span>
+<span id="cb51-17"><a href=""></a>pred<span class="sc">$</span>danio <span class="ot">&lt;-</span> danio_seq <span class="co"># la agregamos en la escala original, para visualizar</span></span>
+<span id="cb51-18"><a href=""></a></span>
+<span id="cb51-19"><a href=""></a><span class="co"># Matriz para llenar con predicciones de mu</span></span>
+<span id="cb51-20"><a href=""></a>mu_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, nrep, S)</span>
+<span id="cb51-21"><a href=""></a></span>
+<span id="cb51-22"><a href=""></a><span class="co"># Y matriz para llenar con valores simulados de semillas germinadas</span></span>
+<span id="cb51-23"><a href=""></a>y_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, nrep, S) <span class="co"># se parece a ysim, pero tiene nrep filas, no N.</span></span>
+<span id="cb51-24"><a href=""></a></span>
+<span id="cb51-25"><a href=""></a><span class="co"># Las llenamos</span></span>
+<span id="cb51-26"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb51-27"><a href=""></a>  mu <span class="ot">&lt;-</span> <span class="fu">plogis</span>( <span class="co"># equivale a inv_logit = logit inverso</span></span>
+<span id="cb51-28"><a href=""></a>    d<span class="sc">$</span>a[i] <span class="sc">+</span> </span>
+<span id="cb51-29"><a href=""></a>    d<span class="sc">$</span>bD[i] <span class="sc">*</span> pred<span class="sc">$</span>D <span class="sc">+</span> d<span class="sc">$</span>bE[i] <span class="sc">*</span> pred<span class="sc">$</span>E <span class="sc">+</span> d<span class="sc">$</span>bH[i] <span class="sc">*</span> pred<span class="sc">$</span>H </span>
+<span id="cb51-30"><a href=""></a>    <span class="co"># los dos últimos términos pueden obviarse, pero los dejamos para </span></span>
+<span id="cb51-31"><a href=""></a>    <span class="co"># explicitar.</span></span>
+<span id="cb51-32"><a href=""></a>  )</span>
+<span id="cb51-33"><a href=""></a>  mu_mat[, i] <span class="ot">&lt;-</span> mu</span>
+<span id="cb51-34"><a href=""></a>  </span>
+<span id="cb51-35"><a href=""></a>  <span class="co"># calculamos alpha y beta para simular</span></span>
+<span id="cb51-36"><a href=""></a>  a <span class="ot">&lt;-</span> mu <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
+<span id="cb51-37"><a href=""></a>  b <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> d<span class="sc">$</span>phi[i]</span>
+<span id="cb51-38"><a href=""></a>  y_mat[, i] <span class="ot">&lt;-</span> <span class="fu">rbbinom</span>(nrep, datos<span class="sc">$</span>sembradas[<span class="dv">1</span>], a, b)</span>
+<span id="cb51-39"><a href=""></a>} </span>
+<span id="cb51-40"><a href=""></a></span>
+<span id="cb51-41"><a href=""></a><span class="co"># Resumimos la distribución posterior de mu fila por fila</span></span>
+<span id="cb51-42"><a href=""></a>pred<span class="sc">$</span>mu_mean <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(mu_mat)</span>
+<span id="cb51-43"><a href=""></a>pred<span class="sc">$</span>mu_lwr <span class="ot">&lt;-</span> <span class="fu">apply</span>(mu_mat, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.025</span>)</span>
+<span id="cb51-44"><a href=""></a>pred<span class="sc">$</span>mu_upr <span class="ot">&lt;-</span> <span class="fu">apply</span>(mu_mat, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb51-45"><a href=""></a></span>
+<span id="cb51-46"><a href=""></a><span class="co"># Convertimos la distribución de y en proporciones, para que esté en la misma</span></span>
+<span id="cb51-47"><a href=""></a><span class="co"># escala que mu</span></span>
+<span id="cb51-48"><a href=""></a>y_mat_p <span class="ot">&lt;-</span> y_mat <span class="sc">/</span> datos<span class="sc">$</span>sembradas[<span class="dv">1</span>]</span>
+<span id="cb51-49"><a href=""></a></span>
+<span id="cb51-50"><a href=""></a><span class="co"># y resumimos</span></span>
+<span id="cb51-51"><a href=""></a>pred<span class="sc">$</span>y_lwr <span class="ot">&lt;-</span> <span class="fu">apply</span>(y_mat_p, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.025</span>)</span>
+<span id="cb51-52"><a href=""></a>pred<span class="sc">$</span>y_upr <span class="ot">&lt;-</span> <span class="fu">apply</span>(y_mat_p, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.975</span>)</span>
+<span id="cb51-53"><a href=""></a></span>
+<span id="cb51-54"><a href=""></a><span class="co"># Calculamos la proporción observada en los datos</span></span>
+<span id="cb51-55"><a href=""></a>datos<span class="sc">$</span>prop <span class="ot">&lt;-</span> datos<span class="sc">$</span>germinadas <span class="sc">/</span> datos<span class="sc">$</span>sembradas</span>
+<span id="cb51-56"><a href=""></a></span>
+<span id="cb51-57"><a href=""></a><span class="co"># Graficamos </span></span>
+<span id="cb51-58"><a href=""></a><span class="fu">ggplot</span>(pred, <span class="fu">aes</span>(danio, mu_mean, <span class="at">ymin =</span> mu_lwr, <span class="at">ymax =</span> mu_upr)) <span class="sc">+</span></span>
+<span id="cb51-59"><a href=""></a>  <span class="co"># Intervalo de predicción (posterior predictive)</span></span>
+<span id="cb51-60"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(danio, <span class="at">ymin =</span> y_lwr, <span class="at">ymax =</span> y_upr), <span class="at">inherit.aes =</span> F, </span>
+<span id="cb51-61"><a href=""></a>              <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">fill =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb51-62"><a href=""></a>  <span class="co"># Intervalo para la media</span></span>
+<span id="cb51-63"><a href=""></a>  <span class="fu">geom_ribbon</span>(<span class="at">color =</span> <span class="cn">NA</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span> </span>
+<span id="cb51-64"><a href=""></a>  <span class="co"># Media de la media</span></span>
+<span id="cb51-65"><a href=""></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb51-66"><a href=""></a>  <span class="co"># datos</span></span>
+<span id="cb51-67"><a href=""></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(danio, prop), <span class="at">data =</span> datos, <span class="at">inherit.aes =</span> F,</span>
+<span id="cb51-68"><a href=""></a>             <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb51-69"><a href=""></a>  <span class="fu">labs</span>(</span>
+<span id="cb51-70"><a href=""></a>    <span class="at">y =</span> <span class="st">"Proporción de germinación"</span>,</span>
+<span id="cb51-71"><a href=""></a>    <span class="at">x =</span> <span class="st">"Daño (%)"</span></span>
+<span id="cb51-72"><a href=""></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-14-1.png" width="480" class="r-stretch"><p>En esta predicción se fijaron en su media las demás predictoras. Esto hace que la predicción no sea comparable con los datos, ya que en los datos, las predictoras sí varían. En este caso, los datos no discrepan de la predicción porque las otras predictoras tienen efectos muy pequeños.</p>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-17-1.png" width="480" class="r-stretch"></section>
+<section class="slide level2">
+
+<p>En esta predicción se fijaron en su media las demás predictoras. Esto hace que la predicción no sea comparable con los datos, ya que en los datos, las predictoras sí varían. En este caso, los datos no discrepan de la predicción porque las otras predictoras tienen efectos muy pequeños.</p>
 <p><br></p>
 <p>Para realizar otras predicciones hay que ponerse creativo al crear la tabla con nuevos valores para las predictoras. Por ejemplo, podríamos graficar más de una curva, para 3 valores contrastantes de alguna otra predictora. Esto es útil para visualizar interacciones.</p>
 </section>
-<section id="verificación-predictiva-previa" class="slide level2">
-<h2>Verificación predictiva previa</h2>
-<p><em>Prior predictive check</em>, estrategias para elegir la previa.</p>
+<section id="simulaciones-previas" class="slide level2">
+<h2>Simulaciones previas</h2>
+<p><br></p>
+<p>Al definir las previas de un modelo con ajuste bayesiano necesitamos inicialmente posicionarnos en relación a qué efecto deseamos de las previas. Algunas opciones pueden ser:</p>
+<ul>
+<li class="fragment"><p>reflejar conocimiento previo sobre el sistema,</p></li>
+<li class="fragment"><p>restringir levemente los parámetros para que tomen valores razonables,</p></li>
+<li class="fragment"><p>restringir fuertemente los parámetros para que el modelo sea estimable,</p></li>
+<li class="fragment"><p>influir lo menos posible en el resultado, limitándose a garantizar la convergencia de algoritmos de estimación.</p></li>
+</ul>
+</section>
+<section class="slide level2">
+
+<p>Independientemente de la postura, para definir previas necesitamos poder traducir información de formas variadas a una distribución de probabilidad. Salvo que contemos con una intuición algebraica y probabilística envidiable, necesitamos graficar las implicancias de las previas en los modelos. Claramente, en contextos donde no hay información previa abundante, conviene investigar un poco qué tipo de previas se recomiendan para el tipo de modelo en cuestión. Para muchas estructuras hay recomendaciones disponibles.</p>
+<p><br></p>
+<p>En última instancia, si la definición de previas nos quita el sueño, podemos ajustar el modelo con distintas previas y comparar resultados. Esto incluso puede plantearse como un problema de comparación de modelos: cambiar la previa es equivalente a cambiar el modelo.</p>
+</section>
+<section class="slide level2">
+
+<p>Para mostrar estrategias para definir previas utilizaremos los modelos ajustados arriba para el número de incendios y la cantidad de semillas germinadas. Supondremos que no hay mucha información previa y que deseamos distribuciones previas con poco efecto en el ajuste, de tal forma que la posterior esté dominada por la verosimilitud.</p>
+</section>
+<section class="slide level2">
+
+<h3 id="simulaciones-previas-1-incendios">Simulaciones previas 1: incendios</h3>
+<p><br></p>
+<p>El modelo estaba definido de la siguiente manera:</p>
+<p><br></p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp;\sim \text{poisson}(\lambda_i) \\
+\lambda_i &amp;= \text{exp}(\alpha + \beta \  FWI_i) \\
+\\
+\alpha &amp;\sim \text{normal}(\mu_{\alpha}, \sigma_{\alpha}) \\
+\beta &amp;\sim \text{normal}(\mu_{\beta}, \sigma_{\beta}) \\
+\\
+\mu_{\alpha} &amp;= \ ..., \sigma_{\alpha} = \ ... \\
+\mu_{\beta} &amp;= \ ..., \sigma_{\beta} = \ ...
+\end{aligned}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>Si deseamos previas que generen valores razonables de <span class="math inline">\(\lambda\)</span> sin afectar mucho el resultado, estamos buscando <em>previas levemente regularizadoras</em>.</p>
+<p>Un buen primer paso es intentar interpretar los parámetros del modelo. Si eso es muy difícil, conviene graficar.</p>
+<p>Consideremos que <span class="math inline">\(\alpha = \log(\lambda)\)</span> cuando <span class="math inline">\(FWI = 0\)</span>. De esta manera, <span class="math display">\[\lambda_{FWI=0} \sim \text{log-normal}(\mu_{\alpha}, \sigma_{\alpha}).\]</span> Entonces, graficamos la lognormal variando sus parámetros (expresados en escala log).</p>
+</section>
+<section class="slide level2">
+
+<p>Para graficar previas o sus implicancias rápidamente, resulta de gran utilidad la función <code>curve</code>, que evalúa una expresión conteniendo “x”.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href=""></a>mu_a <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">10</span>) <span class="co"># la mediana de la lognormal sería 10</span></span>
+<span id="cb52-2"><a href=""></a>sigma_a <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb52-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, mu_a, sigma_a), <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-18-1.png" width="480" class="r-stretch"><p>Con <span class="math inline">\(\sigma_{\alpha} = 2\)</span> la distribución se hace muy amplia. No nos dejemos engañar por su pico cerca de cero. Si bien en esa zona la densidad es alta, la masa de probabilidad (área bajo la curva) es baja, por lo que esta previa no sesgaría la estimación hacia cero si hay al menos unos pocos datos.</p>
+</section>
+<section class="slide level2">
+
+<p>Pero si nos interesa no sesgar el resultado, otra estrategia es centrar la previa en la media de los datos, y darle un desvío grande:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href=""></a><span class="co"># Cargamos datos</span></span>
+<span id="cb53-2"><a href=""></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"datos"</span>, <span class="st">"barbera_data_fire_total_climate.csv"</span>))</span>
+<span id="cb53-3"><a href=""></a></span>
+<span id="cb53-4"><a href=""></a>mu_a <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fu">mean</span>(datos<span class="sc">$</span>fires)) </span>
+<span id="cb53-5"><a href=""></a>sigma_a <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb53-6"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, mu_a, sigma_a), <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-19-1.png" width="480" class="r-stretch"><p>Si queremos informar aún menos, podemos aumentar un poco más $_{}.</p>
+</section>
+<section class="slide level2">
+
+<p>Ahora nos centramos en <span class="math inline">\(\beta\)</span>. Por suerte, para este modelo (GLM con enlace log), <span class="math inline">\(\beta\)</span> tiene una interpretación clara: <span class="math inline">\(\exp(\beta)\)</span> es el factor en que aumenta <span class="math inline">\(\lambda\)</span> cuando <span class="math inline">\(x = FWI\)</span> aumenta una unidad. Si suponemos que <span class="math inline">\(\lambda\)</span> se duplica al aumentar el <span class="math inline">\(FWI\)</span> una unidad, <span class="math inline">\(\beta = \log(2)\)</span>. Pero como el <span class="math inline">\(FWI\)</span> varía entre 0 y ~50, ese aumento sería absurdamente grande. Quizás es más sensato pensar en aumentos más pequeños. Probemos un aumento de 1.1 <span class="math inline">\(\beta = \log(1.1)\)</span>.</p>
+<p>Nuevamente, <span class="math inline">\(\exp(\beta)\)</span> sigue una distribución log-normal:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href=""></a>mu_b <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">1.1</span>)</span>
+<span id="cb54-2"><a href=""></a>sigma_b <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb54-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, mu_b, sigma_b), <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-20-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Esta previa tiene mediana y media positiva (1.1), pero también permite valores menores a 1, que implican disminución del número de incendios con el <span class="math inline">\(FWI\)</span>. Si esto no nos parece razonable, podemos modificar la previa para dejar poca probabilidad abajo de 1 (restricción blanda) o truncar la previa en 1, para que sólo permita aumentos. Iremos por el primer enfoque.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href=""></a>mu_b <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">1.1</span>)</span>
+<span id="cb55-2"><a href=""></a>sigma_b <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb55-3"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlnorm</span>(x, mu_b, sigma_b), <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-21-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Ahora es una previa más razonable, quizás algo informativa. Pero cuán informativa es dependerá de cuán informativos sean los datos.</p>
+<p>Ahora graficamos las previas elegidas para <span class="math inline">\(\alpha\)</span> y <span class="math inline">\(\beta\)</span> (escala log, son normales):</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href=""></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb56-2"><a href=""></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, mu_a, sigma_a), <span class="at">from =</span> <span class="sc">-</span><span class="dv">10</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">xlab =</span> <span class="fu">expression</span>(alpha),</span>
+<span id="cb56-3"><a href=""></a>      <span class="at">ylab =</span> <span class="st">"Densidad"</span>)</span>
+<span id="cb56-4"><a href=""></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x, mu_b, sigma_b), <span class="at">from =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">xlab =</span> <span class="fu">expression</span>(beta),</span>
+<span id="cb56-5"><a href=""></a>      <span class="at">ylab =</span> <span class="cn">NA</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-22-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href=""></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section class="slide level2">
+
+<p>Ahora podemos simular valores de estas previas para explorar qué curvas de <span class="math inline">\(\lambda = f(FWI)\)</span> implican:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href=""></a>light_col <span class="ot">&lt;-</span> <span class="fu">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.1</span>)</span>
+<span id="cb58-2"><a href=""></a></span>
+<span id="cb58-3"><a href=""></a><span class="co"># gráfico inicial</span></span>
+<span id="cb58-4"><a href=""></a>a <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_a, sigma_a)</span>
+<span id="cb58-5"><a href=""></a>b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_b, sigma_b)</span>
+<span id="cb58-6"><a href=""></a><span class="fu">curve</span>(<span class="fu">exp</span>(a <span class="sc">+</span> b <span class="sc">*</span> x), <span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">20</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>), <span class="at">col =</span> light_col,</span>
+<span id="cb58-7"><a href=""></a>      <span class="at">xlab =</span> <span class="st">"FWI"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(lambda)) </span>
+<span id="cb58-8"><a href=""></a></span>
+<span id="cb58-9"><a href=""></a><span class="co"># Repetimos con muchas muestras, usando el argumento "add = TRUE" en curve()</span></span>
+<span id="cb58-10"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb58-11"><a href=""></a>  a <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_a, sigma_a)</span>
+<span id="cb58-12"><a href=""></a>  b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_b, sigma_b)</span>
+<span id="cb58-13"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">exp</span>(a <span class="sc">+</span> b <span class="sc">*</span> x), <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb58-14"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-23-1.png" width="480" class="r-stretch"><p>Muchas curvas parecen poco razonables. Pero bueno, estábamos buscando previas poco informativas, ¿no?</p>
+</section>
+<section class="slide level2">
+
+<p>También podemos simular datos utilizando los valores observados de la predictora. Esto implica simular de la distribución predictiva previa (análoga a la distribución predictiva posterior).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href=""></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(datos)</span>
+<span id="cb59-2"><a href=""></a>S <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb59-3"><a href=""></a>ysim <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, N, S)</span>
+<span id="cb59-4"><a href=""></a></span>
+<span id="cb59-5"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>S) {</span>
+<span id="cb59-6"><a href=""></a>  a <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_a, sigma_a)</span>
+<span id="cb59-7"><a href=""></a>  b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, mu_b, sigma_b)</span>
+<span id="cb59-8"><a href=""></a>  lambda <span class="ot">&lt;-</span> <span class="fu">exp</span>(a <span class="sc">+</span> b <span class="sc">*</span> datos<span class="sc">$</span>fwi)</span>
+<span id="cb59-9"><a href=""></a>  ysim[, i] <span class="ot">&lt;-</span> <span class="fu">rpois</span>(N, lambda)</span>
+<span id="cb59-10"><a href=""></a>}</span>
+<span id="cb59-11"><a href=""></a></span>
+<span id="cb59-12"><a href=""></a><span class="fu">hist</span>(<span class="fu">as.numeric</span>(ysim))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href=""></a><span class="fu">quantile</span>(<span class="fu">as.numeric</span>(ysim), <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.95</span>, <span class="fl">0.98</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    90%     95%     98% 
+ 521.00 1138.00 2648.02 </code></pre>
+</div>
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-24-1.png" width="480" class="r-stretch"><p>Los datos simulados pueden tomar valores muy altos. Esto puede ser razonable si no queremos que la previa influya mucho en los resultados.</p>
+</section>
+<section class="slide level2">
+
+<p>Para ilustrar un ejemplo de previa poco intuitiva, alteraremos el modelo: en vez de suponer una distribución poisson, supondremos binomial negativa, que admite mayor dispersión mediante el parámetro <span class="math inline">\(phi\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp;\sim \text{binomial negativa}(\lambda_i, \phi) \\
+\lambda_i &amp;= \text{exp}(\alpha + \beta \  FWI_i) \\
+\\
+\alpha &amp;\sim \text{normal}(\mu_{\alpha}, \sigma_{\alpha}) \\
+\beta &amp;\sim \text{normal}(\mu_{\beta}, \sigma_{\beta}) \\
+\phi &amp;\sim \text{gama}(a = 1 / \tau, b = 1 / (\mu_{\phi} \ \tau)) \\
+\\
+\mu_{\alpha} &amp;= \ ..., \sigma_{\alpha} = \ ... \\
+\mu_{\beta} &amp;= \ ..., \sigma_{\beta} = \ ... \\
+\mu_{\phi} &amp;= \ ..., \tau = \ ...
+\end{aligned}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>La varianza de la binomial negativa, con media <span class="math inline">\(\lambda\)</span> se define como</p>
+<p><span class="math display">\[\mathrm{Var}(Y) = \lambda + \frac{\lambda^2}{\phi},\]</span></p>
+<p>equivalente a</p>
+<p><span class="math display">\[\mathrm{Var}(Y) = \lambda \left(1 + \frac{\lambda}{\phi} \right).\]</span></p>
+<p>Por lo que <span class="math inline">\(\phi\)</span> tiene una relación inversa con la varianza, y se puede decir que es un parámetro de precisión (opuesto a dispersión).</p>
+</section>
+<section class="slide level2">
+
+<p>Podemos evaluar las implicancias de <span class="math inline">\(\phi\)</span> fijando <span class="math inline">\(\lambda\)</span> y visualizando la pmf.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href=""></a><span class="co"># usamos dnbinom de extraDistr, que la parametriza igual que Stan's neg_binomial_2.</span></span>
+<span id="cb62-2"><a href=""></a><span class="co"># size = phi</span></span>
+<span id="cb62-3"><a href=""></a>x <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">100</span></span>
+<span id="cb62-4"><a href=""></a></span>
+<span id="cb62-5"><a href=""></a>y <span class="ot">&lt;-</span> <span class="fu">dnbinom</span>(x, <span class="at">mu =</span> <span class="dv">10</span>, <span class="at">size =</span> <span class="dv">1000</span>)</span>
+<span id="cb62-6"><a href=""></a><span class="fu">barplot</span>(y <span class="sc">~</span> x); <span class="fu">abline</span>(<span class="at">v =</span> <span class="dv">10</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-25-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href=""></a><span class="co"># Con size alto tiende a poisson</span></span>
+<span id="cb63-2"><a href=""></a></span>
+<span id="cb63-3"><a href=""></a>y <span class="ot">&lt;-</span> <span class="fu">dnbinom</span>(x, <span class="at">mu =</span> <span class="dv">10</span>, <span class="at">size =</span> <span class="dv">1</span>)</span>
+<span id="cb63-4"><a href=""></a><span class="fu">barplot</span>(y <span class="sc">~</span> x); <span class="fu">abline</span>(<span class="at">v =</span> <span class="dv">10</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-25-2.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href=""></a>y <span class="ot">&lt;-</span> <span class="fu">dnbinom</span>(x, <span class="at">mu =</span> <span class="dv">10</span>, <span class="at">size =</span> <span class="fl">0.1</span>)</span>
+<span id="cb64-2"><a href=""></a><span class="fu">barplot</span>(y <span class="sc">~</span> x); <span class="fu">abline</span>(<span class="at">v =</span> <span class="dv">10</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-25-3.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href=""></a><span class="co"># ChatGPT recomendó una previa gama(2, 0.1), lo que implica</span></span>
+<span id="cb65-2"><a href=""></a><span class="co"># a = 2 = 1 / 0.5</span></span>
+<span id="cb65-3"><a href=""></a><span class="co"># b = 0.1 = 1 / (0.5 * 20) </span></span>
+<span id="cb65-4"><a href=""></a><span class="co"># lo que implica mu_phi = 20, tau = 0.5</span></span>
+<span id="cb65-5"><a href=""></a></span>
+<span id="cb65-6"><a href=""></a>lambda <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="co"># probar cambiarlo</span></span>
+<span id="cb65-7"><a href=""></a>mu_phi <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="co"># nos gustan?</span></span>
+<span id="cb65-8"><a href=""></a>tau <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb65-9"><a href=""></a></span>
+<span id="cb65-10"><a href=""></a>phi <span class="ot">&lt;-</span> <span class="fu">rgamma</span>(<span class="dv">1</span>, <span class="dv">1</span> <span class="sc">/</span> tau, <span class="dv">1</span> <span class="sc">/</span> (mu_phi <span class="sc">*</span> tau))</span>
+<span id="cb65-11"><a href=""></a><span class="fu">curve</span>(</span>
+<span id="cb65-12"><a href=""></a>  <span class="fu">dnbinom</span>(x, <span class="at">size =</span> phi, <span class="at">mu =</span> <span class="dv">10</span>), <span class="co"># este mu es lambda</span></span>
+<span id="cb65-13"><a href=""></a>  <span class="at">to =</span> lambda <span class="sc">*</span> <span class="dv">10</span>, <span class="at">col =</span> light_col, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb65-14"><a href=""></a>) </span>
+<span id="cb65-15"><a href=""></a></span>
+<span id="cb65-16"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb65-17"><a href=""></a>  phi <span class="ot">&lt;-</span> <span class="fu">rgamma</span>(<span class="dv">1</span>, <span class="dv">1</span> <span class="sc">/</span> tau, <span class="dv">1</span> <span class="sc">/</span> (mu_phi <span class="sc">*</span> tau))</span>
+<span id="cb65-18"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">dnbinom</span>(x, <span class="at">size =</span> phi, <span class="at">mu =</span> <span class="dv">10</span>), <span class="at">add =</span> T, <span class="at">col =</span> light_col) <span class="co"># este mu es lambda</span></span>
+<span id="cb65-19"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-25-4.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href=""></a><span class="co"># Para ser menos informativo, prefiero mu_phi = 20, tau = 1 (tau es la dispersión</span></span>
+<span id="cb66-2"><a href=""></a><span class="co"># de la gama, por lo que mi previa es más amplia que la recomendada por ChatGPT)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section class="slide level2">
+
+<h3 id="simulaciones-previas-2-germinación">Simulaciones previas 2: germinación</h3>
+<p><br></p>
+<p>Retomemos el modelo de semillas germinadas de Alinari et al.&nbsp;2024:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp;\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
+\mu_i &amp;= \frac{1}{1 + \exp(-\eta_i)} \\
+\eta_i &amp;= \alpha + \beta_D \ D_i + \beta_E \ E_i + \beta_H \ H_i\\
+\\
+\alpha &amp;\sim \text{normal}(0, 10) \\
+\beta_. &amp;\sim \text{normal}(0, 5) \\
+\phi &amp;\sim \text{log-normal}(\log(10), 2) \\
+\\
+\text{y: } &amp;\text{Número de semillas germinadas} \\
+\text{N: } &amp;\text{Número de semillas sembradas} \\
+\text{D: } &amp;\text{Daño por fuego} \\
+\text{E: } &amp;\text{Altidud} \\
+\text{H: } &amp;\text{Altura inicial del árbol} \\
+\end{aligned}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>Comencemos explorando previas para el intercepto (<span class="math inline">\(\alpha\)</span>). Recordemos que</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{logit}^{-1}(x) &amp;= \frac{1}{1 + \exp(-x)} \\
+\text{logit}^{-1}(0) &amp;= 0.5 \\
+\text{logit}^{-1}(5) &amp;= 0.9933071 \\
+\text{logit}^{-1}(-5) &amp;= 1 - 0.9933071 \\
+\text{logit}^{-1}(+\infty) &amp;\approx 1 \\
+\text{logit}^{-1}(-\infty) &amp;\approx 0 \\
+\end{aligned}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p>Con predictoras estandarizadas (media = 0), <span class="math inline">\(\alpha\)</span> es la probabilidad de germinación (<span class="math inline">\(\mu\)</span>) cuando las predictoras están en sus medias.</p>
+<p>Si <span class="math inline">\(\alpha \sim \text{normal}()\)</span>, entonces <span class="math inline">\(\text{logit}^{-1}(\alpha) \sim \text{logit-normal}()\)</span>.</p>
+<p>Si la media de la previa de <span class="math inline">\(\alpha\)</span> es 0, a medida que aumentamos su desvío acumulamos masa cerca de <span class="math inline">\(\mu = 0\)</span> y <span class="math inline">\(\mu = 1\)</span>:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href=""></a><span class="co"># usamos el paquete logitnorm para la distribución logit-normal</span></span>
+<span id="cb67-2"><a href=""></a></span>
+<span id="cb67-3"><a href=""></a>mu_a <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb67-4"><a href=""></a>sigma_a <span class="ot">&lt;-</span> <span class="fl">1.4</span></span>
+<span id="cb67-5"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlogitnorm</span>(x, mu_a, sigma_a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-26-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href=""></a>sigma_a <span class="ot">&lt;-</span> <span class="fl">1.8</span></span>
+<span id="cb68-2"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlogitnorm</span>(x, mu_a, sigma_a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-26-2.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href=""></a>sigma_a <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb69-2"><a href=""></a><span class="fu">curve</span>(<span class="fu">dlogitnorm</span>(x, mu_a, sigma_a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-26-3.png" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Si bien puede resultar poco intuitivo, la previa con sd = 10 resulta muy poco informativa. Permite que se estimen probabiliades extremas si los datos lo indican.</p>
+</section>
+<section class="slide level2">
+
+<p>Yendo a los <span class="math inline">\(\beta\)</span>, una gran ventaja de estandarizar las predictoras es que sus previas pueden ser todas iguales, a falta de información que sugiera que lo sean.</p>
+<p>Para explorar previas sobre <span class="math inline">\(\beta\)</span> conviene asumir el efecto parcial de una predictora, fijando las demás en sus medias y <span class="math inline">\(\alpha = 0\)</span>.</p>
+<p>Como seremos indiferentes al signo, las previas de <span class="math inline">\(\beta\)</span> estarán centradas en 0.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href=""></a>sigma_b <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb70-2"><a href=""></a></span>
+<span id="cb70-3"><a href=""></a>b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb70-4"><a href=""></a></span>
+<span id="cb70-5"><a href=""></a><span class="co"># plogis es inv_logit en R.</span></span>
+<span id="cb70-6"><a href=""></a><span class="co"># de -3 a 3 porque ese rango suele ocupar una variable estandarizada</span></span>
+<span id="cb70-7"><a href=""></a><span class="co"># cuando es aproximadamente normal.</span></span>
+<span id="cb70-8"><a href=""></a><span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">from =</span> <span class="sc">-</span><span class="dv">3</span>, <span class="at">to =</span> <span class="dv">3</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb70-9"><a href=""></a>      <span class="at">col =</span> light_col)</span>
+<span id="cb70-10"><a href=""></a></span>
+<span id="cb70-11"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb70-12"><a href=""></a>  b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb70-13"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb70-14"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-27-1.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href=""></a><span class="co"># sigma mayor</span></span>
+<span id="cb71-2"><a href=""></a>sigma_b <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb71-3"><a href=""></a>b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb71-4"><a href=""></a><span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">from =</span> <span class="sc">-</span><span class="dv">3</span>, <span class="at">to =</span> <span class="dv">3</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb71-5"><a href=""></a>      <span class="at">col =</span> light_col)</span>
+<span id="cb71-6"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb71-7"><a href=""></a>  b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb71-8"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb71-9"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-27-2.png" width="480"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href=""></a><span class="co"># y mayor</span></span>
+<span id="cb72-2"><a href=""></a>sigma_b <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb72-3"><a href=""></a>b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb72-4"><a href=""></a><span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">from =</span> <span class="sc">-</span><span class="dv">3</span>, <span class="at">to =</span> <span class="dv">3</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb72-5"><a href=""></a>      <span class="at">col =</span> light_col)</span>
+<span id="cb72-6"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb72-7"><a href=""></a>  b <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, sigma_b)</span>
+<span id="cb72-8"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">plogis</span>(b <span class="sc">*</span> x), <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb72-9"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-27-3.png" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Igual que con <span class="math inline">\(\alpha\)</span>, una previa amplia para <span class="math inline">\(\beta\)</span> no sesga la posterior hacia valores extremos; simplemente no impide que los datos lo sugieran. No es conveniente si tenemos escasos datos.</p>
+</section>
+<section class="slide level2">
+
+<p>Por último, debemos definir la previa para <span class="math inline">\(\phi\)</span>, el parámetro de precisión de la distribución beta-binomial. La beta-binomial es una binomial con mayor dispersión (regulada por <span class="math inline">\(\phi\)</span>), que surge de suponer que la probabilidad de éxito (<span class="math inline">\(\pi\)</span>, aquí <span class="math inline">\(\mu\)</span>) de una binomial sigue una distribución beta. Su varianza es</p>
+<p><span class="math display">\[\mathrm{Var}(Y) = N \mu (1 - \mu) \left( \frac{N + \phi}{1 + \phi} \right),\]</span></p>
+<p>donde <span class="math inline">\(N\)</span> es el número de experimentos, <span class="math inline">\(\phi\)</span> es un parámetro de precisión (<span class="math inline">\(\alpha + \beta\)</span> en la distribución beta) y <span class="math inline">\(\mu\)</span> es la probabilidad de éxito. (La media es <span class="math inline">\(\mu \times N\)</span>.)</p>
+<p>Graficaremos la pmf suponiendo <span class="math inline">\(N = 500\)</span> y <span class="math inline">\(\mu = 0.5\)</span>.</p>
+</section>
+<section class="slide level2">
+
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href=""></a><span class="co"># usamos extraDistr</span></span>
+<span id="cb73-2"><a href=""></a></span>
+<span id="cb73-3"><a href=""></a><span class="co"># dbetabinom, se parametriza con alpha y beta, no con mu y phi.</span></span>
+<span id="cb73-4"><a href=""></a><span class="co"># Se definen así:</span></span>
+<span id="cb73-5"><a href=""></a>mu <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb73-6"><a href=""></a>N <span class="ot">&lt;-</span> <span class="dv">500</span>  <span class="co"># N</span></span>
+<span id="cb73-7"><a href=""></a></span>
+<span id="cb73-8"><a href=""></a></span>
+<span id="cb73-9"><a href=""></a>phi <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>, <span class="fu">log</span>(<span class="dv">10</span>), <span class="dv">2</span>)</span>
+<span id="cb73-10"><a href=""></a>alpha <span class="ot">&lt;-</span> mu <span class="sc">*</span> phi      <span class="co"># necesarios para dbbinom</span></span>
+<span id="cb73-11"><a href=""></a>beta <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> phi</span>
+<span id="cb73-12"><a href=""></a><span class="fu">curve</span>(</span>
+<span id="cb73-13"><a href=""></a>  <span class="fu">dbbinom</span>(x, <span class="at">size =</span> N, <span class="at">alpha =</span> alpha, <span class="at">beta =</span> beta),</span>
+<span id="cb73-14"><a href=""></a>  <span class="at">to =</span> N, <span class="at">col =</span> light_col, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb73-15"><a href=""></a>) </span>
+<span id="cb73-16"><a href=""></a></span>
+<span id="cb73-17"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb73-18"><a href=""></a>  phi <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>, <span class="fu">log</span>(<span class="dv">10</span>), <span class="dv">2</span>)</span>
+<span id="cb73-19"><a href=""></a>  alpha <span class="ot">&lt;-</span> mu <span class="sc">*</span> phi   </span>
+<span id="cb73-20"><a href=""></a>  beta <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> phi</span>
+<span id="cb73-21"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">dbbinom</span>(x, <span class="at">size =</span> N, <span class="at">alpha =</span> alpha, <span class="at">beta =</span> beta),</span>
+<span id="cb73-22"><a href=""></a>        <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb73-23"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-28-1.png" width="480" class="r-stretch"><p>La previa definida es muy amplia; permite muchas distribuciones en que los valores se acumulan en los extremos (todos éxitos o todos fracasos). Podemos encogerla.</p>
+</section>
+<section class="slide level2">
+
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href=""></a><span class="co"># usamos sd = 1.5 en vez de 2 en la previa lognormal de phi</span></span>
+<span id="cb74-2"><a href=""></a></span>
+<span id="cb74-3"><a href=""></a>phi <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>, <span class="fu">log</span>(<span class="dv">10</span>), <span class="fl">1.5</span>)</span>
+<span id="cb74-4"><a href=""></a>alpha <span class="ot">&lt;-</span> mu <span class="sc">*</span> phi      <span class="co"># necesarios para dbbinom</span></span>
+<span id="cb74-5"><a href=""></a>beta <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> phi</span>
+<span id="cb74-6"><a href=""></a><span class="fu">curve</span>(</span>
+<span id="cb74-7"><a href=""></a>  <span class="fu">dbbinom</span>(x, <span class="at">size =</span> N, <span class="at">alpha =</span> alpha, <span class="at">beta =</span> beta),</span>
+<span id="cb74-8"><a href=""></a>  <span class="at">to =</span> N, <span class="at">col =</span> light_col, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>)</span>
+<span id="cb74-9"><a href=""></a>) </span>
+<span id="cb74-10"><a href=""></a></span>
+<span id="cb74-11"><a href=""></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>) {</span>
+<span id="cb74-12"><a href=""></a>  phi <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>, <span class="fu">log</span>(<span class="dv">10</span>), <span class="dv">1</span>)</span>
+<span id="cb74-13"><a href=""></a>  alpha <span class="ot">&lt;-</span> mu <span class="sc">*</span> phi   </span>
+<span id="cb74-14"><a href=""></a>  beta <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> mu) <span class="sc">*</span> phi</span>
+<span id="cb74-15"><a href=""></a>  <span class="fu">curve</span>(<span class="fu">dbbinom</span>(x, <span class="at">size =</span> N, <span class="at">alpha =</span> alpha, <span class="at">beta =</span> beta),</span>
+<span id="cb74-16"><a href=""></a>        <span class="at">col =</span> light_col, <span class="at">add =</span> T)</span>
+<span id="cb74-17"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="Clase7_verificacion-interpretacion_files/figure-revealjs/unnamed-chunk-29-1.png" width="480" class="r-stretch"><p>Esta es un poco menos extrema.</p>
 
 </section>
     </div>

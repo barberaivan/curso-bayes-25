@@ -1,0 +1,10 @@
+Datos de presencia/ausencia de caracoles según condiciones microambientales
+
+- "punto": id del sitio muestreado
+- "pH": pH del agua
+- "temp": temperatura (°C) del agua en el momento del muestreo
+- "prof": profundidad (cm) del agua
+- "veg_PA": presencia de plantas acuáticas
+- "veg_G": presencia de gramíneas
+- "veg_A": presencia de algas
+- "detec": presencia de caracoles
