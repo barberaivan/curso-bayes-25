@@ -209,6 +209,80 @@ res <- createDHARMa(
 plot(res)
 # Mejoró un poco, pero sigue estando un poco errado.
 
+# Resultados modelo 2 -----------------------------------------------------
+
+# Resumen de las marginales (lo que le pidamos en "variables")
+summ <- fit2$summary(variables = c("coef", "sigma_ranef", "sigma_g", "nu"))
+print(summ)
+
+# Extraemos las muestras para calculas más cosas
+d <- fit2$draws(
+  variables = c("coef", "sigma_ranef", "sigma_g", "nu"),
+  format = "draws_df"
+)
+
+# Algunos enunciados probabilísticos que pueden interesar (dependiendo del
+# contexto)
+
+S <- nrow(d) # cantidad de muestras de la posterior
+
+# Pr(media_ranching > media_conservación)
+sum(d$'coef[2]' > 0) / S
+# coef[2] es la diferencia ranching - conservación, porque conservación es el
+# nivel de referencia
+
+# Pr(media_quemado > media_no_quemad)
+sum(d$'coef[3]' > 0) / S
+# coef[3] es la diferencia quemado - no quemado, porque no quemado es el
+# nivel de referencia.
+# Esta prob da muy baja, casi cero. Eso indica que el enunciado opuesto
+# tiene probabilidad casi 1: el crecimiento es mayor en parcelas no quemadas.
+
+# ¿Cuán probable es que el efecto del manejo varíe según quemado/no quemado, o,
+# equivalentemente, que el efecto del fuego varíe esgún el manejo?
+# Esto se representa con el término de interacción.
+sum(d$`coef[4]` > 0) / S
+# Si la prob es cercana a 0.5 (lo es), significa que tanto un efecto positivo
+# un efecto negativo son probables, lo cual indica que no hay mucha evidencia
+# a favor de una interacción manejo * fuego.
+
+# Probabilidad de que el crecimiento aumente en función de la altura inicial, la
+# altitud y la cobertura de bosque:
+
+sum(d$`coef[5]` > 0) / S
+# si esto es cero, significa que la altura inicial disminuye el crecimiento, con
+# probabilidad 1.
+
+sum(d$`coef[6]` > 0) / S
+# El efecto de la altitud es mayormente negativo
+
+sum(d$`coef[7]` > 0) / S
+# A mayor cobertura de bosque, el crecimiento es mayor, con probabilidad cercana
+# a 1 (mucha certeza sobre el signo.)
+
+# Comparación de previa contra posterior.
+# Usamos density() para obtener la densidad empírica a partir de muestras,
+# y curve() para dibujar la previa.
+
+# intercept (coef[1])
+plot(density(d$`coef[1]`), main = NA, xlab = "coef[1]: intercept",
+     xlim = c(-100, 100))
+curve(dnorm(x, 0, 1000), col = 4, add = T)
+
+# sigma_g (residual) y sigma_ranef (variación entre plots)
+plot(density(d$sigma_ranef), main = NA, xlab = "sigma_ranef", xlim = c(0, 200),
+     ylim = c(0, 0.13))
+lines(density(d$sigma_g), col = "red", ylim = c(0, 0.1))
+curve(dnorm(x, 0, 1000) * 2, col = 4, add = T)
+text(100, 0.06, "sigma_ranef")
+text(25, 0.1, "sigma_g", col = "red")
+text(150, 0.015, "previa", col = 4)
+
+# nu, los grados de libertad
+plot(density(d$nu), main = NA, xlab = expression(nu), xlim = c(0, 20))
+curve(dgamma(x, 2, 0.1), col = 4, add = T)
+
+
 # Predicciones (con modelo 2) ---------------------------------------------
 
 # Graficaremos predicciones parciales para el crecimiento en función de la

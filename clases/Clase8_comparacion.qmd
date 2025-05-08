@@ -17,6 +17,8 @@ format:
     fig-height: 4
     fig-align: center
     highlight-style: github
+    mathjax: true
+    self-contained: true
   pdf:
     documentclass: article
     keep-tex: true

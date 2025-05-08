@@ -266,19 +266,19 @@ distribución se modela. Ejemplo:
 
 $$
 \begin{aligned}
-y_i &\sim \text{Poisson}(\lambda) \\
+y_i &\sim \text{poisson}(\lambda) \\
 y_1 &= 11
 \end{aligned}
 $$
 
--   "$y_i$ sigue una distribución Poisson con parámetro $\lambda$."
--   "Definimos una función de verosimilitud Poisson."
+-   "$y_i$ sigue una distribución poisson con parámetro $\lambda$."
+-   "Definimos una función de verosimilitud poisson."
 
 ------------------------------------------------------------------------
 
 #### La verosimilitud no es una distribución
 
-Función de masa de probabilidad de Poisson:
+Función de masa de probabilidad de poisson:
 
 $$
 \begin{aligned}
@@ -312,7 +312,6 @@ Usando la misma ecuación, podemos evaluar la probabilidad de algún valor
 puntual de $y$ en función de $\lambda$:
 
 ```{r}
-y1 <- 11
 lambda_seq <- seq(0, 30, by = 0.1)
 l1 <- dpois(y1, lambda_seq)
 plot(l1 ~ lambda_seq, type = "l",
@@ -344,8 +343,7 @@ text(26, 0.10, expression(y[3] == 20), col = 4)
 
 ------------------------------------------------------------------------
 
-Con una sola observación, podemos visualizar ambas funciones a la
-vez.  
+Con una sola observación, podemos visualizar ambas funciones a la vez.\
 (Gracias, `plotly`)
 
 ```{r}
@@ -398,7 +396,7 @@ plot_ly(
       ),
       zaxis = list(title = "Pr(Y = y)", showspikes = FALSE)
     ),
-    title = "Distribución Poisson:\nverosimilitud y función de masa de probabilidad"
+    title = "Distribución poisson:\nverosimilitud y función de masa de probabilidad"
   )
 ```
 
@@ -424,7 +422,6 @@ $$
 ------------------------------------------------------------------------
 
 ```{r}
-y1 <- 11
 lambda_seq <- seq(0, 30, by = 0.1)
 
 l1 <- dpois(y1, lambda_seq)
@@ -454,7 +451,6 @@ text(26, 0.18, "Verosimilitud\nconjunta")
 La escalamos
 
 ```{r}
-y1 <- 11
 lambda_seq <- seq(0, 30, by = 0.1)
 
 l1 <- dpois(y1, lambda_seq)
@@ -577,7 +573,7 @@ FWI (datos de Barberá et al. 2025). <br>
 
 $$
 \begin{aligned}
-y_i &\sim \text{Poisson}(\lambda_i) \\
+y_i &\sim \text{poisson}(\lambda_i) \\
 \lambda_i &= \text{exp}(\alpha + \beta \  FWI_i) \\
 \\
 y_i&: \text{número de incendios} \ge 10 \text{ha en el verano} \ i \\
@@ -595,7 +591,7 @@ Sólo necesitamos estimar $\alpha$ y $\beta$.
 Cargamos datos y graficamos.
 
 ```{r}
-datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("R_curso_modelos", "datos", "barbera_data_fire_total_climate.csv"))
 
 ggplot(datos, aes(x = fwi, y = fires)) +
   geom_point(color = rgb(0, 0, 0, 0.8), size = 2) +
@@ -869,7 +865,7 @@ p2 <- ggplot(datos, aes(x = fwi, y = fires)) +
 
 <br>
 
-Actividades 1 a 6 (incluida).
+Actividad 1.
 
 ------------------------------------------------------------------------
 
@@ -1069,6 +1065,8 @@ p(\lambda \mid \boldsymbol{y}) &\propto \prod_i^N \text{poisson}(y_i \mid \lambd
 \end{aligned}
 $$
 
+`prod(dpois(y, lambda)) * dgamma(lambda, alpha, beta)`
+
 ------------------------------------------------------------------------
 
 \[Uso interactivo, vaya a `R`.\]
@@ -1089,7 +1087,7 @@ d0 <- data.frame(
 
 # definimos parámetros de la previa
 mu <- 5      # media
-sigma2 <- 5  # varianza
+sigma2 <- 30  # varianza
 
 # obtenemos alpha y beta, que son los parámetros que requiere dgamma
 alpha <- mu ^ 2 / sigma2
@@ -1098,8 +1096,8 @@ beta <- mu / sigma2
 # calculamos verosimilitud, previa y posterior
 for (i in 1:ns) {
   d0$like[i] <- prod(dpois(y, lambda_seq[i]))
-  d0$prior[i] <- dgamma(lambda_seq[i], alpha, beta)
-  #d0$prior[i] <- dunif(lambda_seq[i], 0, 15) # previa plana
+  # d0$prior[i] <- dgamma(lambda_seq[i], alpha, beta)
+  d0$prior[i] <- dunif(lambda_seq[i], 0, 100) # previa plana
 }
 d0$post <- d0$like * d0$prior
 
@@ -1165,7 +1163,15 @@ $$
 
 <br>
 
-Y en log: 
+`prod(dpois(y, lambda = exp(alpha + beta * x)) *`
+
+`dnorm(alpha, mu_a, sigma_a) *`
+
+`dnorm(beta, mu_b, sigma_b)`
+
+<br>
+
+Y en log:
 
 $$
 \begin{aligned}
@@ -1174,6 +1180,14 @@ $$
 \log[p(\alpha, \beta \mid \boldsymbol{y})] &\doteq \sum_i^N \log[\text{poisson}(y_i \mid \alpha, \beta)] + \log[\text{normal}(\alpha \mid \mu_{\alpha}, \sigma_{\alpha})] + \log[\text{normal}(\beta \mid \mu_{\beta}, \sigma_{\beta})]
 \end{aligned}
 $$
+
+<br>
+
+`sum(dpois(y, lambda = exp(alpha + beta * x), log = T) +`
+
+`dnorm(alpha, mu_a, sigma_a, log = T) +`
+
+`dnorm(beta, mu_b, sigma_b, log = T)`
 
 ------------------------------------------------------------------------
 
@@ -1298,7 +1312,7 @@ post_fire <- function(alpha, beta,
 
 <br>
 
-Actividades 7 a 11.
+Actividades 2.
 
 ------------------------------------------------------------------------
 
@@ -1379,7 +1393,7 @@ Si en vez de concentrarnos en obtener la distribución posterior completa
 nos conformamos únicamente con obtener el modo, como estimador puntual,
 podríamos tomar la -log densidad posterior y minimizarla. La -log
 densidad posterior, es la suma de la -log verosimilitud, la -log previa
-y el -log de la constante normalizadora ($C$): 
+y el -log de la constante normalizadora ($C$):
 
 $$
 \begin{aligned}
@@ -1387,7 +1401,7 @@ p(\theta \mid y) &= L(y \mid \theta) \times p(\theta) \times C \\
 \log{[p(\theta \mid y)]} &= \log [L(y \mid \theta)] + \log [p(\theta)] + \log(C) \\
 -\log{[p(\theta \mid y)]} &= -\log [L(y \mid \theta)] - \log [p(\theta)] - \log(C).
 \end{aligned}
-$$ 
+$$
 
 De esta manera, nuestro estimador puntual puede ser
 

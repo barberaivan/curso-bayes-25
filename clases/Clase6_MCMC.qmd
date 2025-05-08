@@ -17,6 +17,8 @@ format:
     fig-height: 4
     fig-align: center
     highlight-style: github
+    mathjax: true
+    self-contained: true
   pdf:
     documentclass: article
     keep-tex: true
@@ -138,7 +140,8 @@ Para generar una intuición de estos conceptos, tomemos la posterior del modelo 
 #| fig-width: 7
 #| fig-height: 5
 
-datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("R_curso_modelos", "datos", 
+                             "barbera_data_fire_total_climate.csv"))
 
 # definimos parámetros de la previa
 mu_a <- 0; sigma_a <- 1
@@ -436,7 +439,7 @@ plot(density(draws_table$beta), xlab = expression(beta), main = NA)
 par(mfrow = c(1, 1))
 
 # También podemos calcular medidas de resumen:
-summary(grilla[, c("alpha", "beta")])
+summary(draws_table[, c("alpha", "beta")])
 ```
 
 ------------------------------------------------------------------------
@@ -657,7 +660,7 @@ for (i in 1:size) {
 ```
 
 ```{r}
-#| fig-width: 7
+#| fig-width: 4
 #| fig-height: 3
 
 # Corremos una cadena corta comenzando dentro de la grilla
@@ -670,7 +673,7 @@ ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
   scale_fill_viridis() +
   geom_point(data = draws_table, mapping = aes(x = alpha, y = beta),
              inherit.aes = F, size = 2, alpha = 0.3) +
-  geom_line(data = draws_table, mapping = aes(x = alpha, y = beta),
+  geom_path(data = draws_table, mapping = aes(x = alpha, y = beta),
              inherit.aes = F, alpha = 0.5, linewidth = 0.2) +
   theme(legend.position = "none") +
   xlab(expression(alpha)) + 
@@ -707,6 +710,7 @@ ggplot(grilla, aes(x = alpha, y = beta, fill = post)) +
 
 p2 <- 
 ggplot(draws_table, aes(x = alpha, y = beta)) + 
+  geom_path(linewidth = 0.1, alpha = 0.4) +
   geom_point(alpha = 0.1) + 
   ggtitle("Muestras") +
   xlab(expression(alpha)) + 
@@ -782,6 +786,9 @@ p4 <-
 [Uso interactivo, vaya a `R`]
 
 ```{r}
+#| fig-width: 7
+#| fig-height: 4
+
 # Corremos 3 cadenas de igual largo comenzando en puntos al azar
 iter_warmup <- 2000
 iter_sampling <- 5000
@@ -890,6 +897,39 @@ Aki Vehtari, Andrew Gelman, Daniel Simpson, Bob Carpenter, and Paul-Christian B�
 ------------------------------------------------------------------------  
   
 [Galería de MCMC](https://chi-feng.github.io/mcmc-demo/app.html?algorithm=RandomWalkMH&target=banana)
+
+------------------------------------------------------------------------
+
+## Software para MCMC {.noincremental}
+
+<br>
+
+::: {.nonincremental}
+
+R
+
+- JAGS  
+- BayesianTools  
+- Nimble  
+- MCMCpack  
+- greta  
+
+Python
+
+- PyMC  
+- TensorFlow Probability  
+- NumPyro  
+- emcee  
+- Dynesty  
+
+Julia
+
+- Turing.jl  
+- AdvancedHMC.jl  
+
+Stan
+
+:::
 
 ------------------------------------------------------------------------
 
@@ -1111,7 +1151,7 @@ post_fire_like_stan <- function(alpha, beta) {
 # .stan.
 
 # Compilamos el modelo
-model <- cmdstan_model(here::here("modelos", "nfuegos.stan"))
+model <- cmdstan_model(here::here("R_curso_modelos", "modelos", "nfuegos.stan"))
 
 # Podemos revisar si lo escribimos bien
 model$check_syntax()
@@ -1139,8 +1179,8 @@ fit_mcmc <- model$sample(
 # de nuevo.
 fit_mcmc$cmdstan_diagnose()
 
-# Resumimos las marginales usando el paquete 'posterior' summaries
-summ <- fit_mcmc$summary()
+# Resumimos las marginales usando el paquete 'posterior'
+summ <- fit_mcmc$summary(c("alpha", "beta"))
 print(summ)
 
 # Cuál es el peor neff y el peor rhat?

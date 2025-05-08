@@ -17,6 +17,8 @@ format:
     fig-height: 4
     fig-align: center
     highlight-style: github
+    mathjax: true
+    self-contained: true
   pdf:
     documentclass: article
     keep-tex: true
@@ -125,10 +127,11 @@ Ejemplo con el modelo de la cantidad de incendios por año
 
 ```{r}
 # Cargamos datos
-datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("R_curso_modelos", "datos",
+                             "barbera_data_fire_total_climate.csv"))
 
 # Compilamos el modelo
-model <- cmdstan_model(here::here("modelos", "nfuegos.stan"))
+model <- cmdstan_model(here::here("R_curso_modelos", "modelos", "nfuegos_01.stan"))
 
 # Creamos una lista nombrada para pasarle los datos. Los nombres de cada
 # elemento de la lista tienen que ser exactamente los que definimos en 
@@ -678,7 +681,8 @@ Ajustamos el modelo
 rm(list = ls()) # Limpiamos el entorno
 
 # Cargamos datos
-datos <- read.csv(here::here("datos", "alinari_data_espinillo.csv"))
+datos <- read.csv(here::here("R_curso_modelos", "datos", 
+                             "alinari_data_espinillo.csv"))
 
 # Conservamos los que tienen datos de germinación
 datos <- subset(datos, !is.na(germinadas) & sembradas > 0)
@@ -710,7 +714,8 @@ stan_data <- list(
 )
 
 # Compilamos modelo
-model <- cmdstan_model(here::here("modelos", "germinadas.stan"))
+model <- cmdstan_model(here::here("R_curso_modelos", "modelos", 
+                                  "germinadas.stan"))
 
 # Muestreamos
 fit <- model$sample(data = stan_data, parallel_chains = 4)
@@ -983,7 +988,8 @@ Pero si nos interesa no sesgar el resultado, otra estrategia es centrar la previ
 
 ```{r}
 # Cargamos datos
-datos <- read.csv(here::here("datos", "barbera_data_fire_total_climate.csv"))
+datos <- read.csv(here::here("R_curso_modelos", "datos",
+                             "barbera_data_fire_total_climate.csv"))
 
 mu_a <- log(mean(datos$fires)) 
 sigma_a <- 2
@@ -1162,7 +1168,7 @@ y_i &\sim \text{beta-binomial}(\mu_i, \phi, S_i) \\
 \phi &\sim \text{log-normal}(\log(10), 2) \\
 \\
 \text{y: } &\text{Número de semillas germinadas} \\
-\text{N: } &\text{Número de semillas sembradas} \\
+\text{S: } &\text{Número de semillas sembradas} \\
 \text{D: } &\text{Daño por fuego} \\
 \text{E: } &\text{Altidud} \\
 \text{H: } &\text{Altura inicial del árbol} \\

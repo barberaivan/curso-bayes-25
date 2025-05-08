@@ -29,7 +29,7 @@ model {
   beta1 ~ normal(0, 1);
   beta2 ~ normal(0, 1);
   beta3 ~ normal(0, 1);
-  phi ~ gamma(2, 0.1); // Recommended by ChatGPT
+  phi ~ gamma(2, 0.1); // Recomendada por ChatGPT
 
   // Verosimilitud
   y ~ neg_binomial_2(lambda, phi);

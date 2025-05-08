@@ -6,6 +6,8 @@
 
 library(tidyverse) # ggplot y pivot_longer
 library(viridis)   # colores
+library(dplyr)
+library(ggplot2)
 library(scales)    # leyenda de gráfico
 library(patchwork) # unir gráficos
 
@@ -43,7 +45,6 @@ theme_set(theme_classic())
 # Datos -------------------------------------------------------------------
 
 datos <- read.csv(file.path("datos", "barbera_data_fire_total_climate.csv"))
-
 
 # Actividad 1 -------------------------------------------------------------
 
@@ -107,6 +108,7 @@ lambda <- grilla$lambda[row]
 p1 <- ggplot(grilla, aes(x = lambda, y = like)) +
   geom_line() +
   # geom_vline(xintercept = lambda, linetype = "dashed") +
+  # scale_y_continous(trans="log10")+
   labs(x = expression(lambda), y = "Verosimilitud") +
   nice_theme()
 

@@ -10,7 +10,13 @@ nfuegos
 
 Número de incendios >= 10 ha en el NO de la Patagonia argentina en función del
 Fire Weather Index (FWI, un índice de peligrosidad de incendios).
-Modelo tomado de ejemplo en las clases 5 a 7. Es de los más sencillos.
+
+nfuegos
+
+Ajusta dos modelos: uno suponiendo distribución poisson de la variable respuesta,
+que fue utilizadado en las clases 5 a 7 (nfuegos_01.stan) y otro suponiendo
+distribución binomial negativa, que es equivalente a poisson pero permitiendo
+mayor variabilidad (nfuegos_02.stan).
 
 nfuegos_comparacion
 
@@ -26,12 +32,16 @@ Número de semillas de espinillo germinadas sobre un total de sembradas, en
 función del daño posfuego de la planta madre, su altura prefuego y la altitud
 en que se encontraba. Tomado de Alinari et al. 2024.
 
-La variable respuesta se modela con una beta-binomial, que es apropiada cuando
-tenemos más variabilidad no explicada que lo que admite la binomial.
+Se ajustan 3 modelos:
 
-Aumenta la complejidad al incluirse 3 predictoras. Se muestra cómo graficar
-predicciones parciales. Se utilizan las predictoras estandarizadas, y son todas
-continuas.
+1) Distribución binomial, con una predictora continua, el daño posfuego.
+2) Distribución binomial, con tres predictoras continuas: daño posfuego, altura
+prefuego y altitud.
+3) Como (2) pero utilizando beta-binomial para la variable respuesta, que
+permite mayor variabilidad que una binomial.
+
+En (2) y (3), al tener más de una predictora, se muestra cómo graficar
+predicciones parciales. Se utilizan las predictoras estandarizadas.
 
 # ------------------------------------------------------------------------
 
@@ -40,9 +50,13 @@ tabaquillos
 Crecimiento de tabaquillos adultos en un período de 15 años en función del
 manejo (conservación vs. ganadería extensiva), ocurrencia de fuego, altitud,
 cobertura boscosa y la altura inicial del árbol (Renison et al. 2025). Se
-muestra cómo incluir dos factores y su interacción (manejo y fuego). Se modela
-la respuesta con una distribución t de student porque los datos presentan
-valores extremos.
+muestra cómo incluir dos factores y su interacción (manejo y fuego).
+
+Se ajustan dos modelos, con la misma estructura salvo que en el primero se
+utiliza distribución normal para la respuesta, y en el segundo, t de student.
+Esta última puede tener colas más pesadas que una normal, con lo cual el modelo
+no se sorprende tanto por valores extremos. Esto hace que el ajuste sea menos
+sensible a estos valores extremos.
 
 # ------------------------------------------------------------------------
 

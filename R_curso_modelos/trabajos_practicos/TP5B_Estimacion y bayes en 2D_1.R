@@ -291,8 +291,8 @@ p3 <-
 grilla2 <- grilla
 
 # Redefinimos y evaluamos la previa
-mu_a <- 1; sigma_a <- 0.1
-mu_b <- -0.1; sigma_b <- 0.05
+mu_a <- -3.5; sigma_a <- 0.1
+mu_b <- -0.25; sigma_b <- 0.05
 
 for (i in 1:size) {
   grilla2$prior[i] <-
