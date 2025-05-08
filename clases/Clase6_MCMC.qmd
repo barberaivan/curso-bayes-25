@@ -1151,7 +1151,7 @@ post_fire_like_stan <- function(alpha, beta) {
 # .stan.
 
 # Compilamos el modelo
-model <- cmdstan_model(here::here("R_curso_modelos", "modelos", "nfuegos.stan"))
+model <- cmdstan_model(here::here("R_curso_modelos", "modelos", "nfuegos_01.stan"))
 
 # Podemos revisar si lo escribimos bien
 model$check_syntax()

@@ -715,7 +715,7 @@ stan_data <- list(
 
 # Compilamos modelo
 model <- cmdstan_model(here::here("R_curso_modelos", "modelos", 
-                                  "germinadas.stan"))
+                                  "germinadas_03.stan"))
 
 # Muestreamos
 fit <- model$sample(data = stan_data, parallel_chains = 4)
