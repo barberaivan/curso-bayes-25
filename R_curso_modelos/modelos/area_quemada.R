@@ -1,5 +1,8 @@
 rm(list = ls()) # Limpiamos el entorno
 
+# Eliminamos modelos compilados de stan, para evitar incompatibilidades
+file.remove(list.files("modelos", pattern = "^[^.]+$", full.names = TRUE))
+
 # Paquetes ----------------------------------------------------------------
 
 library(tidyverse)  # gráficos et al

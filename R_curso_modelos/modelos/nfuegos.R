@@ -1,5 +1,8 @@
 rm(list = ls()) # Limpiamos el entorno
 
+# Eliminamos modelos compilados de stan, para evitar incompatibilidades
+file.remove(list.files("modelos", pattern = "^[^.]+$", full.names = TRUE))
+
 # Paquetes ----------------------------------------------------------------
 
 library(tidyverse)  # gráficos et al
@@ -42,6 +45,13 @@ stan_data <- list(
   y = datos$fires,
   x = datos$fwi
 )
+
+
+# Un enfoque más familiar -------------------------------------------------
+
+# Ajustamos el mismo modelo pero con enfoque frecuentista
+fit_freq <- glm(fires ~ fwi, family = "poisson", data = datos)
+summary(fit_freq)
 
 # Modelo 01: poisson -----------------------------------------------------
 
