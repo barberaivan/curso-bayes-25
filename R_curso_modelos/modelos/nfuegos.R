@@ -52,6 +52,11 @@ stan_data <- list(
 # Ajustamos el mismo modelo pero con enfoque frecuentista
 fit_freq <- glm(fires ~ fwi, family = "poisson", data = datos)
 summary(fit_freq)
+car::Anova(fit_freq)
+
+# graficamos
+plot(fires ~ fwi, datos, pch = 19)
+curve(exp(0.0842 + 0.16532 * x), add = TRUE, col = 4)
 
 # Modelo 01: poisson -----------------------------------------------------
 
@@ -99,6 +104,9 @@ sum(ebeta > 1.2) / S
 lambda <- exp(d$alpha + d$beta * 18)
 sum(lambda > 20) / S
 
+# Pr(beta < 0.01 & beta > -0.01)
+sum(d$beta < 0.01 & d$beta > -0.01) / S
+
 
 # Comparación de previa contra posterior.
 # Usamos density() para obtener la densidad empírica a partir de muestras,
@@ -138,6 +146,14 @@ for (s in 1:S) {
   ysim[, s] <- rpois(N, lambda)
 }
 
+
+# visualizamos ejemplos
+fila <- sample(1:N, 1)
+fila
+mm <- max(c(ysim[fila, ], datos$fires[fila]))
+hist(ysim[fila, ], xlim = c(0, mm * 1.05))
+abline(v = datos$fires[fila], col = "red", lwd = 3, lty = 2)
+
 # Ahora cada fila tiene muestras de la distribución predictiva posterior de y
 # para el valor correspondiente de fwi
 
@@ -174,7 +190,7 @@ ppc_intervals(
   y = datos$fires, # observaciones
   yrep = ysim_t,   # simulaciones de la predictiva posterior
   x = datos$fwi,   # alguna predictora de interés
-  prob = 0.9       # probabilidad de los intervalos
+  prob = 0.5       # probabilidad de los intervalos
 ) +
   labs(x = "FWI", y = "Número de incendios")
 
@@ -200,7 +216,7 @@ for (s in 1:S) {
 # Podemos graficar algunas curvas ("spaghetti plot").
 # Ordenaremos la matriz para graficarla con ggplot
 ncurves <- 50
-use <- sample(1:S, ncurves) # elegimos 150 curvas al azar
+use <- sample(1:S, size = ncurves, replace = F) # elegimos 150 curvas al azar
 lambda_mat_sub <- as.data.frame(lambda_mat[, use])
 lambda_mat_sub$fwi <- fwi_seq
 
@@ -225,7 +241,7 @@ ggplot(llong, aes(fwi, lambda, group = sim)) +
 pred <- data.frame(
   fwi = fwi_seq,
   lambda_mean = rowMeans(lambda_mat),
-  lambda_lwr = apply(lambda_mat, 1, quantile, probs = 0.025),
+  lambda_lwr = apply(lambda_mat, MARGIN = 1, quantile, probs = 0.025),
   lambda_upr = apply(lambda_mat, 1, quantile, probs = 0.975)
 )
 
@@ -237,7 +253,7 @@ for (i in 1:N) {
 # array llamado "lambda_mat", iterando sobre la dimensión 1 (filas)
 
 # Ahora graficamos la predicción media y su incertidumbre
-ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
+ggplot(pred, aes(x = fwi, y = lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
   geom_ribbon(alpha = 0.4, color = NA, fill = "orange") +
   geom_line() +
   labs(x = "FWI", y = expression(lambda)) +
@@ -256,6 +272,9 @@ ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
 ysim_seq <- matrix(NA, nrep, S)
 for (s in 1:S) {
   ysim_seq[, s] <- rpois(nrep, lambda = lambda_mat[, s])
+
+  # plot(lambda_mat[, s] ~ fwi_seq, type = "l", ylim = c(0, 50))
+  # points(ysim_seq[, s] ~ fwi_seq, pch = 19, col = rgb(1, 0, 0, 0.1))
 }
 
 # Obtenemos los cuantiles extremos:
@@ -270,7 +289,7 @@ ggplot(pred, aes(fwi, lambda_mean, ymin = lambda_lwr, ymax = lambda_upr)) +
   # Intervalo para lambda
   geom_ribbon(alpha = 0.6, color = NA, fill = "orange") +
   geom_line() +
-  labs(x = "FWI", y = expression(lambda)) +
+  labs(x = "FWI", y = "Número de incendios") +
   # Agregamos los datos
   geom_point(aes(fwi, fires), data = datos, inherit.aes = F,
              alpha = 0.7, size = 2)

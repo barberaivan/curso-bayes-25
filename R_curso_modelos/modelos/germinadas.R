@@ -92,6 +92,7 @@ fit1$cmdstan_diagnose()
 
 summ <- fit1$summary(c("alpha", "beta"))
 print(summ)
+write.csv(summ, "summ.csv")
 
 # Previa vs. posterior ----------------------------------------------------
 
@@ -131,8 +132,12 @@ ysim_t <- t(ysim)
 # Miramos con bayesplot
 ppc_intervals(
   datos$germinadas, yrep = ysim_t, x = datos$danio,
-  prob = 0.5, prob_outer = 0.9
-)
+  prob = 0.9, prob_outer = 0.9
+) +
+  labs(
+    y = "Número de semillas germinadas",
+    x = "Daño por fuego en la planta madre (%)"
+  )
 
 use <- sample(1:S, 100)
 ppc_dens_overlay(datos$germinadas, yrep = ysim_t[use, ])

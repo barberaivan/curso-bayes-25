@@ -3,11 +3,11 @@ data {
   int<lower=0> K;  // n efectos fijos
   int<lower=0> np; // n plots
 
-  vector[N] g;
+  vector[N] g;  // growth
 
-  vector[N] r;
-  vector[N] b;
-  vector[N] rb;
+  vector[N] r;  // ranching
+  vector[N] b;  // burned
+  vector[N] rb; // ranching y burned
 
   vector[N] h;
   vector[N] a;

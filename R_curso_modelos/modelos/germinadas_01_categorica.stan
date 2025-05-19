@@ -3,22 +3,26 @@ data {
   int<lower=0> S; // semillas sembradas (constante)
   array[N] int y; // nro germinadas
 
-  vector[N] D; // daño por fuego
+  vector[N] DM; // daño por fuego medio
+  vector[N] DA; // daño por fuego alto
+
 }
 
 parameters {
   real alpha;
-  real beta;
+  real betaM;
+  real betaA;
 }
 
 transformed parameters {
-  vector[N] mu = inv_logit(alpha + beta * D); // plogis en R
+  vector[N] mu = inv_logit(alpha + betaM * DM + betaA * DA); // plogis en R
 }
 
 model {
   // Previas
   alpha ~ normal(0, 10);
-  beta ~ normal(0, 5);
+  betaM ~ normal(0, 5);
+  betaA ~ normal(0, 5);
 
   // Verosimilitud
   y ~ binomial(S, mu);
